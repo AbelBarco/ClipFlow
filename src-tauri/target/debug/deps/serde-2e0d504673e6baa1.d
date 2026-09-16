@@ -1,0 +1,14 @@
+C:\Users\caleon\Desktop\ClipFlow\src-tauri\target\debug\deps\serde-2e0d504673e6baa1.d: C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\lib.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\integer128.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\private\mod.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\private\de.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\private\ser.rs C:\Users\caleon\Desktop\ClipFlow\src-tauri\target\debug\build\serde-b6553f8e687cfd72\out/private.rs
+
+C:\Users\caleon\Desktop\ClipFlow\src-tauri\target\debug\deps\libserde-2e0d504673e6baa1.rlib: C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\lib.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\integer128.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\private\mod.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\private\de.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\private\ser.rs C:\Users\caleon\Desktop\ClipFlow\src-tauri\target\debug\build\serde-b6553f8e687cfd72\out/private.rs
+
+C:\Users\caleon\Desktop\ClipFlow\src-tauri\target\debug\deps\libserde-2e0d504673e6baa1.rmeta: C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\lib.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\integer128.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\private\mod.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\private\de.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\private\ser.rs C:\Users\caleon\Desktop\ClipFlow\src-tauri\target\debug\build\serde-b6553f8e687cfd72\out/private.rs
+
+C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\lib.rs:
+C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\integer128.rs:
+C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\private\mod.rs:
+C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\private\de.rs:
+C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\private\ser.rs:
+C:\Users\caleon\Desktop\ClipFlow\src-tauri\target\debug\build\serde-b6553f8e687cfd72\out/private.rs:
+
+# env-dep:OUT_DIR=C:\\Users\\caleon\\Desktop\\ClipFlow\\src-tauri\\target\\debug\\build\\serde-b6553f8e687cfd72\\out

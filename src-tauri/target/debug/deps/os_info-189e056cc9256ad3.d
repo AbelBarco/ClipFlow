@@ -1,0 +1,11 @@
+C:\Users\caleon\Desktop\ClipFlow\src-tauri\target\debug\deps\os_info-189e056cc9256ad3.d: C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\os_info-3.15.0\src\lib.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\os_info-3.15.0\src\windows\mod.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\os_info-3.15.0\src\windows\winapi.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\os_info-3.15.0\src\bitness.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\os_info-3.15.0\src\info.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\os_info-3.15.0\src\os_type.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\os_info-3.15.0\src\version.rs
+
+C:\Users\caleon\Desktop\ClipFlow\src-tauri\target\debug\deps\libos_info-189e056cc9256ad3.rmeta: C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\os_info-3.15.0\src\lib.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\os_info-3.15.0\src\windows\mod.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\os_info-3.15.0\src\windows\winapi.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\os_info-3.15.0\src\bitness.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\os_info-3.15.0\src\info.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\os_info-3.15.0\src\os_type.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\os_info-3.15.0\src\version.rs
+
+C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\os_info-3.15.0\src\lib.rs:
+C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\os_info-3.15.0\src\windows\mod.rs:
+C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\os_info-3.15.0\src\windows\winapi.rs:
+C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\os_info-3.15.0\src\bitness.rs:
+C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\os_info-3.15.0\src\info.rs:
+C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\os_info-3.15.0\src\os_type.rs:
+C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\os_info-3.15.0\src\version.rs:

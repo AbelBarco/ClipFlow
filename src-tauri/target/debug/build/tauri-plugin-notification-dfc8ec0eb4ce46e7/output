@@ -1,0 +1,7 @@
+cargo:rerun-if-changed=permissions
+cargo:PERMISSION_FILES_PATH=C:\Users\caleon\Desktop\ClipFlow\src-tauri\target\debug\build\tauri-plugin-notification-dfc8ec0eb4ce46e7\out\tauri-plugin-notification-permission-files
+cargo:rerun-if-env-changed=REMOVE_UNUSED_COMMANDS
+cargo:GLOBAL_API_SCRIPT_PATH=\\?\C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tauri-plugin-notification-2.4.0\api-iife.js
+cargo:rustc-check-cfg=cfg(mobile)
+cargo:rustc-check-cfg=cfg(desktop)
+cargo:rustc-cfg=desktop

@@ -1,0 +1,10 @@
+C:\Users\caleon\Desktop\ClipFlow\src-tauri\target\debug\deps\zerovec_derive-9f93c15facf87d8e.d: C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\zerovec-derive-0.11.6\src\lib.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\zerovec-derive-0.11.6\src\make_ule.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\zerovec-derive-0.11.6\src\make_varule.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\zerovec-derive-0.11.6\src\ule.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\zerovec-derive-0.11.6\src\utils.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\zerovec-derive-0.11.6\src\varule.rs
+
+C:\Users\caleon\Desktop\ClipFlow\src-tauri\target\debug\deps\zerovec_derive-9f93c15facf87d8e.dll: C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\zerovec-derive-0.11.6\src\lib.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\zerovec-derive-0.11.6\src\make_ule.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\zerovec-derive-0.11.6\src\make_varule.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\zerovec-derive-0.11.6\src\ule.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\zerovec-derive-0.11.6\src\utils.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\zerovec-derive-0.11.6\src\varule.rs
+
+C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\zerovec-derive-0.11.6\src\lib.rs:
+C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\zerovec-derive-0.11.6\src\make_ule.rs:
+C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\zerovec-derive-0.11.6\src\make_varule.rs:
+C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\zerovec-derive-0.11.6\src\ule.rs:
+C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\zerovec-derive-0.11.6\src\utils.rs:
+C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\zerovec-derive-0.11.6\src\varule.rs:

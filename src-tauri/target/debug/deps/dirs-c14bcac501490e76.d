@@ -1,0 +1,6 @@
+C:\Users\caleon\Desktop\ClipFlow\src-tauri\target\debug\deps\dirs-c14bcac501490e76.d: C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\dirs-6.0.0\src\lib.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\dirs-6.0.0\src\win.rs
+
+C:\Users\caleon\Desktop\ClipFlow\src-tauri\target\debug\deps\libdirs-c14bcac501490e76.rmeta: C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\dirs-6.0.0\src\lib.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\dirs-6.0.0\src\win.rs
+
+C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\dirs-6.0.0\src\lib.rs:
+C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\dirs-6.0.0\src\win.rs:

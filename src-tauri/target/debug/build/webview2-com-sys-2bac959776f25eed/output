@@ -1,0 +1,2 @@
+cargo:rustc-link-search=native=C:\Users\caleon\Desktop\ClipFlow\src-tauri\target\debug\build\webview2-com-sys-2bac959776f25eed\out\x64
+cargo:rustc-link-lib=advapi32
