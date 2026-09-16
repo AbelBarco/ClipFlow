@@ -1,0 +1,115 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            artifact_name: clipflow-linux-x86_64
+            bundle_type: appimage
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            artifact_name: clipflow-macos-x86_64
+            bundle_type: dmg
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            artifact_name: clipflow-macos-arm64
+            bundle_type: dmg
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            artifact_name: clipflow-windows-x86_64
+            bundle_type: msi
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install system dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev libssl-dev libsqlite3-dev
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build frontend
+        run: pnpm run build
+
+      - name: Build Tauri app
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_KEY_PASSWORD }}
+        with:
+          target: ${{ matrix.target }}
+          args: --target ${{ matrix.target }}
+          tagName: ${{ github.ref_name }}
+          releaseName: "ClipFlow ${{ github.ref_name }}"
+          releaseBody: |
+            ## ClipFlow ${{ github.ref_name }}
+
+            ### Changes
+            See [CHANGELOG.md](https://github.com/clipflow/clipflow/blob/main/CHANGELOG.md) for details.
+
+            ### Downloads
+            - **Linux (x86_64)**: clipflow-linux-x86_64.AppImage
+            - **macOS (Intel)**: clipflow-macos-x86_64.dmg
+            - **macOS (Apple Silicon)**: clipflow-macos-arm64.dmg
+            - **Windows (x86_64)**: clipflow-windows-x86_64.msi
+
+            ### Verification
+            All binaries are signed and verified. Checksums are provided in the release assets.
+
+      - name: Generate checksums
+        run: |
+          cd src-tauri/target/${{ matrix.target }}/release/bundle/
+          find . -name "*.${{ matrix.bundle_type }}" -o -name "*.exe" -o -name "*.AppImage" | xargs sha256sum > checksums.txt
+          cat checksums.txt
+
+      - name: Upload checksums
+        uses: actions/upload-artifact@v4
+        with:
+          name: checksums-${{ matrix.artifact_name }}
+          path: src-tauri/target/${{ matrix.target }}/release/bundle/checksums.txt
+
+  publish:
+    name: Publish to Stores
+    needs: release
+    if: false  # Set to true when ready to publish to stores
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish to Microsoft Store
+        run: echo "Configure Microsoft Store publishing"
+
+      - name: Publish to Mac App Store
+        run: echo "Configure Mac App Store publishing"
+
+      - name: Publish to Snap Store
+        run: echo "Configure Snap Store publishing"

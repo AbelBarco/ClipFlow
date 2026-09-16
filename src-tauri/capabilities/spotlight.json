@@ -1,0 +1,23 @@
+{
+  "$schema": "https://schema.tauri.app/capability/v1.json",
+  "identifier": "spotlight-capability",
+  "description": "Minimal capabilities for spotlight window",
+  "windows": ["spotlight"],
+  "permissions": [
+    "core:default",
+    "clipboard:default",
+    "dialog:default",
+    "fs:default",
+    "fs:allow-app-data",
+    "fs:allow-app-data-recursive",
+    "global-shortcut:default",
+    "notification:default",
+    "path:default",
+    "process:default",
+    "shell:default",
+    "sql:default",
+    "store:default",
+    "tray:default",
+    "window:default"
+  ]
+}

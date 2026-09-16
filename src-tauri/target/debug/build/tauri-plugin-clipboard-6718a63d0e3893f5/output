@@ -1,6 +1,0 @@
-cargo:rerun-if-changed=permissions
-cargo:PERMISSION_FILES_PATH=C:\Users\caleon\Desktop\ClipFlow\src-tauri\target\debug\build\tauri-plugin-clipboard-6718a63d0e3893f5\out\tauri-plugin-clipboard-permission-files
-cargo:rerun-if-env-changed=REMOVE_UNUSED_COMMANDS
-cargo:rustc-check-cfg=cfg(mobile)
-cargo:rustc-check-cfg=cfg(desktop)
-cargo:rustc-cfg=desktop

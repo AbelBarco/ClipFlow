@@ -1,9 +1,0 @@
-C:\Users\caleon\Desktop\ClipFlow\src-tauri\target\debug\deps\global_hotkey-a59b46ca6c04c431.d: C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\global-hotkey-0.8.0\src\lib.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\global-hotkey-0.8.0\src\error.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\global-hotkey-0.8.0\src\hotkey.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\global-hotkey-0.8.0\src\platform_impl\mod.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\global-hotkey-0.8.0\src\platform_impl\windows\mod.rs
-
-C:\Users\caleon\Desktop\ClipFlow\src-tauri\target\debug\deps\libglobal_hotkey-a59b46ca6c04c431.rmeta: C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\global-hotkey-0.8.0\src\lib.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\global-hotkey-0.8.0\src\error.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\global-hotkey-0.8.0\src\hotkey.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\global-hotkey-0.8.0\src\platform_impl\mod.rs C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\global-hotkey-0.8.0\src\platform_impl\windows\mod.rs
-
-C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\global-hotkey-0.8.0\src\lib.rs:
-C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\global-hotkey-0.8.0\src\error.rs:
-C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\global-hotkey-0.8.0\src\hotkey.rs:
-C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\global-hotkey-0.8.0\src\platform_impl\mod.rs:
-C:\Users\caleon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\global-hotkey-0.8.0\src\platform_impl\windows\mod.rs:

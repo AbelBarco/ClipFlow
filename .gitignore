@@ -1,0 +1,57 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+build/
+dist/
+target/
+
+# Tauri
+src-tauri/target/
+src-tauri/*.app/
+src-tauri/*.dmg/
+src-tauri/*.msi/
+src-tauri/*.AppImage/
+src-tauri/*.deb/
+src-tauri/*.rpm/
+src-tauri/*.snap/
+src-tauri/bundle/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Testing
+coverage/
+.nyc_output/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Tauri generated
+src-tauri/gen/
+
+# pnpm
+pnpm-lock.yaml (if not committing)
+
+# Misc
+*.local

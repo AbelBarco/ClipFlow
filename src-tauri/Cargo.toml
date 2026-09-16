@@ -1,0 +1,49 @@
+[package]
+name = "clipflow"
+version = "0.1.0"
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "2.0", features = [] }
+
+[dependencies]
+tauri = { version = "2.0", features = ["macros"] }
+tauri-plugin-sql = { version = "2.0", features = ["sqlite", "migration"] }
+tauri-plugin-global-shortcut = "2.0"
+tauri-plugin-tray = "2.0"
+tauri-plugin-opener = "2.0"
+tauri-plugin-clipboard-manager = "2.0"
+tauri-plugin-notification = "2.0"
+tauri-plugin-store = "2.0"
+tauri-plugin-dialog = "2.0"
+tauri-plugin-shell = "2.0"
+tauri-plugin-fs = "2.0"
+tauri-plugin-http = "2.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1.0", features = ["full"] }
+rusqlite = { version = "0.31", features = ["bundled"] }
+dirs = "5.0"
+image = "0.24"
+base64 = "0.21"
+urlencoding = "2.1"
+regex = "1.0"
+lazy_static = "1.4"
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1.0", features = ["v4", "serde"] }
+anyhow = "1.0"
+thiserror = "1.0"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.58", features = ["Win32_UI_WindowsAndMessaging", "Win32_Foundation", "Win32_System_Com", "Win32_Graphics_Gdi", "Win32_UI_Input_KeyboardAndMouse", "Win32_System_Threading", "Win32_System_Ole", "WinRT_AI_MachineLearning_Preview", "WinRT_Graphics_Imaging", "WinRT_Storage_Streams"] }
+tao = { version = "0.30", features = ["raw-window-handle-06"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2 = { version = "0.6", features = ["Foundation", "AppKit", "Vision", "CoreImage", "CoreGraphics"] }
+tao = { version = "0.30", features = ["raw-window-handle-06"] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+tesseract = "0.1"
+tao = { version = "0.30", features = ["raw-window-handle-06", "x11"] }
