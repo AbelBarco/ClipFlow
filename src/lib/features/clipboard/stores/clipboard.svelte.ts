@@ -1,6 +1,15 @@
 import { invoke } from '@tauri-apps/api/core';
 import type { ClipItem, ClipboardFilter, ClipboardState } from '../types/clipboard.types';
-import { Fuse } from 'fuse.js';
+import Fuse from 'fuse.js';
+
+function createFuse(items: ClipItem[]): Fuse<ClipItem> {
+  return new Fuse(items, {
+    keys: ['content', 'preview', 'ocrText'],
+    threshold: 0.4,
+    includeScore: true,
+    minMatchCharLength: 2
+  });
+}
 
 class ClipboardStore implements ClipboardState {
   items: ClipItem[] = $state([]);
@@ -8,23 +17,15 @@ class ClipboardStore implements ClipboardState {
   filter: ClipboardFilter = $state({ query: '', types: [] });
   isLoading: boolean = $state(false);
 
-  private fuse: Fuse<ClipItem>;
-
-  constructor() {
-    this.fuse = new Fuse(this.items, {
-      keys: ['content', 'preview', 'ocrText'],
-      threshold: 0.4,
-      includeScore: true,
-      minMatchCharLength: 2
-    });
-  }
+  private fuse: Fuse<ClipItem> = createFuse([]);
 
   get filteredItems(): ClipItem[] {
-    if (!this.filter.query.trim()) {
+    const query = this.filter.query.trim();
+    if (!query) {
       return this.items;
     }
-    const results = this.fuse.search(this.filter.query);
-    return results.map(r => r.item);
+    const results = this.fuse.search(query);
+    return results.map((r) => r.item);
   }
 
   async loadHistory(): Promise<void> {
@@ -32,12 +33,7 @@ class ClipboardStore implements ClipboardState {
     try {
       const items = await invoke<ClipItem[]>('clipboard_get_history');
       this.items = items;
-      this.fuse = new Fuse(this.items, {
-        keys: ['content', 'preview', 'ocrText'],
-        threshold: 0.4,
-        includeScore: true,
-        minMatchCharLength: 2
-      });
+      this.fuse = createFuse(this.items);
     } catch (error) {
       console.error('Failed to load clipboard history:', error);
     } finally {
@@ -47,24 +43,14 @@ class ClipboardStore implements ClipboardState {
 
   async deleteItem(id: string): Promise<void> {
     await invoke('clipboard_delete_item', { itemId: id });
-    this.items = this.items.filter(item => item.id !== id);
-    this.fuse = new Fuse(this.items, {
-      keys: ['content', 'preview', 'ocrText'],
-      threshold: 0.4,
-      includeScore: true,
-      minMatchCharLength: 2
-    });
+    this.items = this.items.filter((item) => item.id !== id);
+    this.fuse = createFuse(this.items);
   }
 
   async clearHistory(): Promise<void> {
     await invoke('clipboard_clear_history');
     this.items = [];
-    this.fuse = new Fuse(this.items, {
-      keys: ['content', 'preview', 'ocrText'],
-      threshold: 0.4,
-      includeScore: true,
-      minMatchCharLength: 2
-    });
+    this.fuse = createFuse(this.items);
   }
 
   selectItem(id: string | null): void {
@@ -73,28 +59,19 @@ class ClipboardStore implements ClipboardState {
 
   setFilter(filter: Partial<ClipboardFilter>): void {
     this.filter = { ...this.filter, ...filter };
+    // Rebuild fuse index only when items change; query changes don't need it.
   }
 
   addItem(item: ClipItem): void {
     this.items = [item, ...this.items];
-    this.fuse = new Fuse(this.items, {
-      keys: ['content', 'preview', 'ocrText'],
-      threshold: 0.4,
-      includeScore: true,
-      minMatchCharLength: 2
-    });
+    this.fuse = createFuse(this.items);
   }
 
   updateItem(id: string, updates: Partial<ClipItem>): void {
-    const index = this.items.findIndex(item => item.id === id);
+    const index = this.items.findIndex((item) => item.id === id);
     if (index !== -1) {
       this.items[index] = { ...this.items[index], ...updates };
-      this.fuse = new Fuse(this.items, {
-        keys: ['content', 'preview', 'ocrText'],
-        threshold: 0.4,
-        includeScore: true,
-        minMatchCharLength: 2
-      });
+      this.fuse = createFuse(this.items);
     }
   }
 }

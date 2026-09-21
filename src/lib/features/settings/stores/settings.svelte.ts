@@ -31,6 +31,16 @@ class SettingsStore {
     }
   }
 
+  async resetToDefaults(): Promise<void> {
+    try {
+      const defaults = await invoke<AppSettings>('settings_reset');
+      this.settings = defaults;
+    } catch {
+      this.settings = { ...DEFAULT_SETTINGS };
+    }
+    this.hasChanges = true;
+  }
+
   reset(): void {
     this.settings = { ...DEFAULT_SETTINGS };
     this.hasChanges = true;
@@ -59,7 +69,9 @@ class SettingsStore {
   }
 
   removeExcludedApp(app: string): void {
-    this.settings.exclusions.excludedApps = this.settings.exclusions.excludedApps.filter(a => a !== app);
+    this.settings.exclusions.excludedApps = this.settings.exclusions.excludedApps.filter(
+      (a) => a !== app
+    );
     this.hasChanges = true;
   }
 }

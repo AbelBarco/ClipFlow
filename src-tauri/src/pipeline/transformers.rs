@@ -15,8 +15,17 @@ pub fn apply_transform(text: &str, transformer: &str) -> Result<String, String> 
         "json_minify" => minify_json(text),
         "url_encode" => Ok(urlencoding::encode(text).to_string()),
         "url_decode" => urlencoding::decode(text).map(|s| s.to_string()).map_err(|e| e.to_string()),
-        "base64_encode" => Ok(base64::encode(text)),
-        "base64_decode" => base64::decode(text).map(|b| String::from_utf8_lossy(&b).to_string()).map_err(|e| e.to_string()),
+        "base64_encode" => {
+            use base64::Engine as _;
+            Ok(base64::engine::general_purpose::STANDARD.encode(text))
+        }
+        "base64_decode" => {
+            use base64::Engine as _;
+            base64::engine::general_purpose::STANDARD
+                .decode(text.trim())
+                .map(|b| String::from_utf8_lossy(&b).to_string())
+                .map_err(|e| e.to_string())
+        }
         _ => Err(format!("Unknown transformer: {}", transformer)),
     }
 }

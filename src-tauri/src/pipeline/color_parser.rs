@@ -1,6 +1,5 @@
 use regex::Regex;
 use lazy_static::lazy_static;
-use crate::pipeline::dedupe::content_hash;
 
 lazy_static! {
     static ref HEX_REGEX: Regex = Regex::new(r"^#([0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$").unwrap();

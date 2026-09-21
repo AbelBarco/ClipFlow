@@ -1,4 +1,3 @@
-use super::OcrProvider;
 use std::path::Path;
 use tokio::process::Command;
 
@@ -8,10 +7,8 @@ impl LinuxOcrProvider {
     pub fn new() -> Self {
         Self
     }
-}
 
-impl OcrProvider for LinuxOcrProvider {
-    async fn recognize(&self, image_path: &str) -> Result<String, String> {
+    pub async fn recognize(&self, image_path: &str) -> Result<String, String> {
         let path = Path::new(image_path);
         if !path.exists() {
             return Err("Image file not found".to_string());

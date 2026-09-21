@@ -4,11 +4,9 @@ pub mod color_parser;
 pub mod transformers;
 
 use crate::pipeline::detector::detect_type;
-use crate::pipeline::dedupe::content_hash;
 
 pub fn process_clipboard_content(content: &[u8], mime_type: Option<&str>) -> ClipItem {
     let content_str = String::from_utf8_lossy(content).to_string();
-    let hash = content_hash(&content_str);
     let clip_type = detect_type(&content_str, mime_type);
     let preview = create_preview(&content_str, &clip_type);
 

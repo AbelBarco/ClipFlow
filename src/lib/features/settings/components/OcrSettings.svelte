@@ -32,7 +32,7 @@
       type="checkbox"
       bind:checked={settingsStore.settings.ocr.enabled}
       class="w-5 h-5 rounded border-surface-300 text-primary-600 focus:ring-primary-500"
-      on:change={() => settingsStore.updateOcr({ enabled: settingsStore.settings.ocr.enabled })}
+      onchange={() => settingsStore.updateOcr({ enabled: settingsStore.settings.ocr.enabled })}
     />
   </div>
 
@@ -42,7 +42,7 @@
       <select
         bind:value={settingsStore.settings.ocr.language}
         class="input w-[200px]"
-        on:change={() => settingsStore.updateOcr({ language: settingsStore.settings.ocr.language })}
+        onchange={() => settingsStore.updateOcr({ language: settingsStore.settings.ocr.language })}
       >
         {#each languages as lang}
           <option value={lang.code}>{lang.name}</option>
@@ -59,7 +59,7 @@
         type="checkbox"
         bind:checked={settingsStore.settings.ocr.autoRun}
         class="w-5 h-5 rounded border-surface-300 text-primary-600 focus:ring-primary-500"
-        on:change={() => settingsStore.updateOcr({ autoRun: settingsStore.settings.ocr.autoRun })}
+        onchange={() => settingsStore.updateOcr({ autoRun: settingsStore.settings.ocr.autoRun })}
       />
     </div>
   {/if}

@@ -1,4 +1,3 @@
-use std::path::PathBuf;
 use tauri::Manager;
 use uuid::Uuid;
 use image::ImageFormat;

@@ -4,18 +4,14 @@
   interface Props {
     value: string;
     placeholder?: string;
-    inputElement?: HTMLInputElement;
     autoFocus?: boolean;
   }
 
-  let { value, placeholder = 'Search...', inputElement, autoFocus = false }: Props = $props();
+  let { value = $bindable(''), placeholder = 'Search...', autoFocus = false }: Props = $props();
 
-  let inputRef: HTMLInputElement;
+  let inputRef: HTMLInputElement | undefined = $state(undefined);
 
   $effect(() => {
-    if (inputElement) {
-      inputElement.value = value;
-    }
     if (inputRef && autoFocus) {
       inputRef.focus();
     }

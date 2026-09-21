@@ -1,106 +1,78 @@
-use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder, WindowEvent};
-use tracing::{info, error};
+use tauri::{AppHandle, Listener, Manager, WebviewUrl, WebviewWindowBuilder, WindowEvent};
+use tracing::info;
 
 pub fn setup(app: AppHandle) -> Result<(), String> {
-    // Create main window (hidden by default)
-    create_main_window(&app)?;
+    // Windows are declared in tauri.conf.json. Only create them programmatically
+    // if they are missing (e.g. config changed), otherwise just wire behaviour.
+    ensure_window(&app, "main", "ClipFlow", 520.0, 600.0, true, false)?;
+    ensure_window(&app, "spotlight", "ClipFlow Spotlight", 560.0, 400.0, false, true)?;
+    ensure_window(&app, "settings", "ClipFlow Settings", 520.0, 500.0, true, false)?;
 
-    // Create spotlight window (hidden by default)
-    create_spotlight_window(&app)?;
+    // Wire close-to-hide behaviour for all windows.
+    for label in ["main", "spotlight", "settings"] {
+        if let Some(window) = app.get_webview_window(label) {
+            let win = window.clone();
+            let is_spotlight = label == "spotlight";
+            window.on_window_event(move |event| match event {
+                WindowEvent::CloseRequested { api, .. } => {
+                    api.prevent_close();
+                    let _ = win.hide();
+                }
+                WindowEvent::Focused(false) if is_spotlight => {
+                    let _ = win.hide();
+                }
+                _ => {}
+            });
+        }
+    }
 
-    // Create settings window (hidden by default)
-    create_settings_window(&app)?;
+    // Listen for show events from tray / global shortcut.
+    let app_main = app.clone();
+    app.listen("show-main-window", move |_| {
+        show_main_window(&app_main).unwrap_or(());
+    });
+    let app_spot = app.clone();
+    app.listen("show-spotlight", move |_| {
+        show_spotlight_window(&app_spot).unwrap_or(());
+    });
+    let app_set = app.clone();
+    app.listen("show-settings", move |_| {
+        show_settings_window(&app_set).unwrap_or(());
+    });
 
+    info!("Windows initialized");
     Ok(())
 }
 
-fn create_main_window(app: &AppHandle) -> Result<(), String> {
-    let window = WebviewWindowBuilder::new(
-        app,
-        "main",
-        WebviewUrl::App("main".into()),
-    )
-    .title("ClipFlow")
-    .inner_size(520.0, 600.0)
-    .min_inner_size(400.0, 400.0)
-    .resizable(true)
-    .decorations(true)
-    .always_on_top(false)
-    .skip_taskbar(false)
-    .visible(false)
-    .build()
-    .map_err(|e| e.to_string())?;
+fn ensure_window(
+    app: &AppHandle,
+    label: &str,
+    title: &str,
+    width: f64,
+    height: f64,
+    decorations: bool,
+    always_on_top: bool,
+) -> Result<(), String> {
+    if app.get_webview_window(label).is_some() {
+        return Ok(());
+    }
 
-    window.on_window_event(|event| {
-        if let WindowEvent::CloseRequested { api, .. } = event {
-            api.prevent_close();
-            let _ = event.window().hide();
-        }
-    });
+    let mut builder = WebviewWindowBuilder::new(app, label, WebviewUrl::App("index.html".into()))
+        .title(title)
+        .inner_size(width, height)
+        .resizable(true)
+        .decorations(decorations)
+        .always_on_top(always_on_top)
+        .skip_taskbar(label == "spotlight")
+        .visible(false)
+        .center();
 
-    info!("Main window created");
-    Ok(())
-}
+    if label == "spotlight" {
+        builder = builder.focused(true);
+    }
 
-fn create_spotlight_window(app: &AppHandle) -> Result<(), String> {
-    let window = WebviewWindowBuilder::new(
-        app,
-        "spotlight",
-        WebviewUrl::App("spotlight".into()),
-    )
-    .title("ClipFlow Spotlight")
-    .inner_size(560.0, 400.0)
-    .min_inner_size(400.0, 300.0)
-    .max_inner_size(800.0, 800.0)
-    .resizable(false)
-    .decorations(false)
-    .always_on_top(true)
-    .skip_taskbar(true)
-    .visible(false)
-    .focused(true)
-    .build()
-    .map_err(|e| e.to_string())?;
-
-    window.on_window_event(|event| {
-        if let WindowEvent::Focused(false) = event {
-            // Hide when focus is lost
-            let _ = event.window().hide();
-        }
-        if let WindowEvent::CloseRequested { api, .. } = event {
-            api.prevent_close();
-            let _ = event.window().hide();
-        }
-    });
-
-    info!("Spotlight window created");
-    Ok(())
-}
-
-fn create_settings_window(app: &AppHandle) -> Result<(), String> {
-    let window = WebviewWindowBuilder::new(
-        app,
-        "settings",
-        WebviewUrl::App("settings".into()),
-    )
-    .title("ClipFlow Settings")
-    .inner_size(520.0, 500.0)
-    .min_inner_size(400.0, 400.0)
-    .resizable(true)
-    .decorations(true)
-    .always_on_top(false)
-    .skip_taskbar(false)
-    .visible(false)
-    .build()
-    .map_err(|e| e.to_string())?;
-
-    window.on_window_event(|event| {
-        if let WindowEvent::CloseRequested { api, .. } = event {
-            api.prevent_close();
-            let _ = event.window().hide();
-        }
-    });
-
-    info!("Settings window created");
+    builder.build().map_err(|e| e.to_string())?;
+    info!("{} window created", label);
     Ok(())
 }
 
@@ -114,15 +86,6 @@ pub fn show_main_window(app: &AppHandle) -> Result<(), String> {
 
 pub fn show_spotlight_window(app: &AppHandle) -> Result<(), String> {
     if let Some(window) = app.get_webview_window("spotlight") {
-        // Position at center of screen
-        if let Some(monitor) = window.current_monitor().map_err(|e| e.to_string())? {
-            let monitor_size = monitor.size();
-            let window_size = window.inner_size().map_err(|e| e.to_string())?;
-            let x = (monitor_size.width as f64 - window_size.width as f64) / 2.0;
-            let y = (monitor_size.height as f64 - window_size.height as f64) / 3.0; // Higher up for spotlight
-            window.set_outer_position(tauri::PhysicalPosition::new(x as i32, y as i32))
-                .map_err(|e| e.to_string())?;
-        }
         window.show().map_err(|e| e.to_string())?;
         window.set_focus().map_err(|e| e.to_string())?;
     }

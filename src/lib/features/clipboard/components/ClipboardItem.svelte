@@ -1,6 +1,5 @@
 <script lang="ts">
   import ColorPreview from '$lib/features/color/components/ColorPreview.svelte';
-  import Kbd from '$lib/features/ui/components/Kbd.svelte';
   import type { ClipItem } from '../types/clipboard.types';
 
   interface Props {
@@ -41,23 +40,40 @@
     return date.toLocaleDateString();
   }
 
+  function formatSize(bytes: number): string {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
   async function handleClick() {
     if (onPaste) {
       await onPaste(item.id);
     }
   }
 
-  async function handleCopy() {
-    await navigator.clipboard.writeText(item.content);
+  async function handleCopy(e: MouseEvent) {
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(item.content);
+    } catch (err) {
+      console.error('Copy failed:', err);
+    }
+  }
+
+  function handleKeydown(e: KeyboardEvent) {
+    if (e.key === 'Enter') {
+      void handleClick();
+    }
   }
 </script>
 
-<button
-  class="card flex items-start gap-3 p-3 w-full text-left item-hover group {compact ? 'p-2' : ''}"
-  on:click={handleClick}
+<div
+  class="card flex items-start gap-3 p-3 w-full text-left item-hover group cursor-pointer {compact ? 'p-2' : ''}"
+  onclick={() => void handleClick()}
+  onkeydown={handleKeydown}
   role="listitem"
   tabindex="0"
-  on:keydown={(e) => e.key === 'Enter' && handleClick()}
 >
   <span class="text-lg flex-shrink-0 mt-0.5">{getTypeIcon(item.type)}</span>
 
@@ -103,7 +119,7 @@
   <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
     <button
       class="btn-ghost p-1.5"
-      on:click={(e) => { e.stopPropagation(); handleCopy(); }}
+      onclick={handleCopy}
       aria-label="Copy to clipboard"
     >
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -111,12 +127,4 @@
       </svg>
     </button>
   </div>
-</button>
-
-<script lang="ts">
-  function formatSize(bytes: number): string {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  }
-</script>
+</div>

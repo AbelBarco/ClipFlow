@@ -1,5 +1,4 @@
 use crate::config::app_config::get_excluded_apps;
-use std::process::Command;
 
 pub async fn should_exclude(content: &str) -> bool {
     // Check for concealed/password-like content
@@ -7,8 +6,13 @@ pub async fn should_exclude(content: &str) -> bool {
         return true;
     }
 
-    // Check if source app is excluded
+    // Check if source app is excluded (best effort; currently disabled
+    // because reliable foreground-app detection needs platform-specific
+    // native code — content heuristics above cover the main cases).
     if let Ok(excluded_apps) = get_excluded_apps().await {
+        if excluded_apps.is_empty() {
+            return false;
+        }
         if let Some(current_app) = get_current_app().await {
             if excluded_apps.iter().any(|app| current_app.contains(app)) {
                 return true;
@@ -68,82 +72,6 @@ fn calculate_entropy(s: &str) -> f64 {
 }
 
 async fn get_current_app() -> Option<String> {
-    #[cfg(target_os = "windows")]
-    {
-        get_current_app_windows().await
-    }
-    #[cfg(target_os = "macos")]
-    {
-        get_current_app_macos().await
-    }
-    #[cfg(target_os = "linux")]
-    {
-        get_current_app_linux().await
-    }
-}
-
-#[cfg(target_os = "windows")]
-async fn get_current_app_windows() -> Option<String> {
-    use windows::Win32::UI::WindowsAndMessaging::{GetForegroundWindow, GetWindowThreadProcessId};
-    use windows::Win32::System::Threading::OpenProcess;
-    use windows::Win32::System::ProcessStatus::GetModuleFileNameExW;
-    use windows::Win32::Foundation::HWND;
-    use windows::Win32::System::Diagnostics::ToolHelp::{CreateToolhelp32Snapshot, Process32FirstW, Process32NextW, PROCESSENTRY32W, TH32CS_SNAPPROCESS};
-    use std::ffi::OsString;
-    use std::os::windows::ffi::OsStringExt;
-
-    unsafe {
-        let hwnd = GetForegroundWindow();
-        if hwnd.0 == 0 {
-            return None;
-        }
-
-        let mut process_id = 0;
-        GetWindowThreadProcessId(hwnd, Some(&mut process_id));
-
-        let snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0).ok()?;
-        let mut entry = PROCESSENTRY32W { dwSize: std::mem::size_of::<PROCESSENTRY32W>() as u32, ..Default::default() };
-
-        if Process32FirstW(snapshot, &mut entry).is_ok() {
-            loop {
-                if entry.th32ProcessID == process_id {
-                    let name = OsString::from_wide(&entry.szExeFile)
-                        .to_string_lossy()
-                        .trim_end_matches('\0')
-                        .to_string();
-                    return Some(name);
-                }
-                if Process32NextW(snapshot, &mut entry).is_err() {
-                    break;
-                }
-            }
-        }
-        None
-    }
-}
-
-#[cfg(target_os = "macos")]
-async fn get_current_app_macos() -> Option<String> {
-    use objc2_app_kit::NSWorkspace;
-    use objc2_foundation::NSRunningApplication;
-
-    let workspace = NSWorkspace::sharedWorkspace();
-    let app = workspace.frontmostApplication()?;
-    Some(app.localizedName()?.to_string())
-}
-
-#[cfg(target_os = "linux")]
-async fn get_current_app_linux() -> Option<String> {
-    // Try to get active window using xdotool or similar
-    let output = Command::new("xdotool")
-        .args(["getactivewindow", "getwindowname"])
-        .output()
-        .await
-        .ok()?;
-
-    if output.status.success() {
-        Some(String::from_utf8_lossy(&output.stdout).trim().to_string())
-    } else {
-        None
-    }
+    // TODO: implement foreground-app detection per platform.
+    None
 }

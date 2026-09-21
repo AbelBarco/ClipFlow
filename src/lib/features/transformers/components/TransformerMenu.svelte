@@ -25,7 +25,7 @@
         <button
           class="w-full flex items-center justify-between px-2 py-1.5 text-sm text-surface-700 dark:text-surface-300 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors"
           role="menuitem"
-          on:click={() => onSelect(transformer)}
+          onclick={() => onSelect(transformer)}
         >
           <span>{transformer.label}</span>
           {#if transformer.shortcut}

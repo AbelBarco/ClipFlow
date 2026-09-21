@@ -1,12 +1,11 @@
-use crate::pipeline::transformers::{apply_transform, list_transformers};
-use tauri::command;
+use crate::pipeline::transformers::{apply_transform as apply_impl, list_transformers as list_impl};
 
-#[command]
-pub async fn apply_transform(text: String, transformer: String) -> Result<String, String> {
-    apply_transform(&text, &transformer).map_err(|e| e.to_string())
+#[tauri::command]
+pub async fn transform_apply(text: String, transformer: String) -> Result<String, String> {
+    apply_impl(&text, &transformer).map_err(|e| e.to_string())
 }
 
-#[command]
-pub async fn list_transformers() -> Result<Vec<String>, String> {
-    Ok(list_transformers())
+#[tauri::command]
+pub async fn transform_list() -> Result<Vec<String>, String> {
+    Ok(list_impl())
 }

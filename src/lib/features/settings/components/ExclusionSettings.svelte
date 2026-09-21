@@ -29,9 +29,9 @@
       bind:value={newApp}
       placeholder="Application name (e.g., 1Password)"
       class="input flex-1"
-      on:keydown={handleKeyDown}
+      onkeydown={handleKeyDown}
     />
-    <button class="btn-secondary" on:click={addApp} disabled={!newApp.trim()}>Add</button>
+    <button class="btn-secondary" onclick={addApp} disabled={!newApp.trim()}>Add</button>
   </div>
 
   <div class="flex flex-wrap gap-2">
@@ -40,7 +40,7 @@
         {app}
         <button
           class="text-surface-500 hover:text-red-500"
-          on:click={() => settingsStore.removeExcludedApp(app)}
+          onclick={() => settingsStore.removeExcludedApp(app)}
           aria-label={`Remove ${app}`}
         >
           ×
@@ -58,7 +58,7 @@
       type="checkbox"
       bind:checked={settingsStore.settings.exclusions.respectConcealed}
       class="w-5 h-5 rounded border-surface-300 text-primary-600 focus:ring-primary-500"
-      on:change={() => settingsStore.updateExclusions({ respectConcealed: settingsStore.settings.exclusions.respectConcealed })}
+      onchange={() => settingsStore.updateExclusions({ respectConcealed: settingsStore.settings.exclusions.respectConcealed })}
     />
   </div>
 </fieldset>

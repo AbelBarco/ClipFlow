@@ -1,6 +1,6 @@
+use crate::storage::db::with_db;
+use rusqlite::params;
 use serde::{Deserialize, Serialize};
-use tauri::Manager;
-use crate::storage::db::get_connection;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -68,18 +68,18 @@ impl Default for AppConfig {
 const CONFIG_KEY: &str = "clipflow_config";
 
 pub async fn get_config() -> Result<AppConfig, String> {
-    let conn = get_connection().ok_or("Database not initialized")?;
-    let conn = conn.lock().unwrap();
+    let json: Option<String> = with_db(|conn| {
+        let mut stmt = conn.prepare("SELECT value FROM settings WHERE key = ?1")?;
+        let mut rows = stmt.query(params![CONFIG_KEY])?;
+        if let Some(row) = rows.next()? {
+            let v: String = row.get(0)?;
+            Ok(Some(v))
+        } else {
+            Ok(None)
+        }
+    })?;
 
-    let config_json: Option<String> = conn
-        .query_row(
-            "SELECT value FROM settings WHERE key = ?1",
-            [CONFIG_KEY],
-            |row| row.get(0),
-        )
-        .ok();
-
-    if let Some(json) = config_json {
+    if let Some(json) = json {
         serde_json::from_str(&json).map_err(|e| e.to_string())
     } else {
         Ok(AppConfig::default())
@@ -87,17 +87,14 @@ pub async fn get_config() -> Result<AppConfig, String> {
 }
 
 pub async fn set_config(config: AppConfig) -> Result<(), String> {
-    let conn = get_connection().ok_or("Database not initialized")?;
-    let conn = conn.lock().unwrap();
-
     let json = serde_json::to_string(&config).map_err(|e| e.to_string())?;
-
-    conn.execute(
-        "INSERT OR REPLACE INTO settings (key, value) VALUES (?1, ?2)",
-        [CONFIG_KEY, &json],
-    ).map_err(|e| e.to_string())?;
-
-    Ok(())
+    with_db(|conn| {
+        conn.execute(
+            "INSERT OR REPLACE INTO settings (key, value) VALUES (?1, ?2)",
+            params![CONFIG_KEY, json],
+        )?;
+        Ok(())
+    })
 }
 
 pub async fn reset_config() -> Result<AppConfig, String> {
@@ -114,19 +111,4 @@ pub async fn get_excluded_apps() -> Result<Vec<String>, String> {
 pub async fn get_global_shortcut() -> Result<String, String> {
     let config = get_config().await?;
     Ok(config.general.global_shortcut)
-}
-
-pub async fn init_settings_table() -> Result<(), String> {
-    let conn = get_connection().ok_or("Database not initialized")?;
-    let conn = conn.lock().unwrap();
-
-    conn.execute(
-        "CREATE TABLE IF NOT EXISTS settings (
-            key TEXT PRIMARY KEY,
-            value TEXT NOT NULL
-        );",
-        [],
-    ).map_err(|e| e.to_string())?;
-
-    Ok(())
 }

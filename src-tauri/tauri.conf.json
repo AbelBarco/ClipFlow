@@ -1,123 +1,22 @@
 {
-  "$schema": "../node_modules/@tauri-apps/cli/schema.json",
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "ClipFlow",
+  "version": "0.1.0",
+  "identifier": "com.clipflow.app",
   "build": {
-    "beforeBuildCommand": "npm run build",
-    "beforeDevCommand": "npm run dev",
-    "devPath": "http://localhost:1420",
-    "distDir": "../build"
+    "devUrl": "http://localhost:1420",
+    "frontendDist": "../build",
+    "beforeDevCommand": "pnpm dev",
+    "beforeBuildCommand": "pnpm build"
   },
-  "package": {
-    "productName": "ClipFlow",
-    "version": "0.1.0"
-  },
-  "tauri": {
-    "allowlist": {
-      "all": false,
-      "clipboard": {
-        "readText": true,
-        "writeText": true,
-        "readImage": true,
-        "writeImage": true
-      },
-      "dialog": {
-        "all": true
-      },
-      "fs": {
-        "all": true,
-        "scope": ["$APPDATA/clipflow/**", "$APPDATA/clipflow/images/**"]
-      },
-      "globalShortcut": {
-        "all": true
-      },
-      "notification": {
-        "all": true
-      },
-      "path": {
-        "all": true
-      },
-      "process": {
-        "all": true
-      },
-      "shell": {
-        "all": true,
-        "scope": {
-          "allow": ["wl-copy", "xclip", "wl-paste", "tesseract"]
-        }
-      },
-      "sql": {
-        "all": true
-      },
-      "store": {
-        "all": true
-      },
-      "tray": {
-        "all": true
-      },
-      "window": {
-        "all": true
-      }
-    },
-    "bundle": {
-      "active": true,
-      "targets": "all",
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ],
-      "identifier": "com.clipflow.app",
-      "publisher": "ClipFlow",
-      "shortDescription": "Lightweight cross-platform clipboard manager",
-      "longDescription": "ClipFlow is a lightweight, cross-platform clipboard manager that lives in your system tray. It saves everything you copy (text, code, images, colors) and lets you retrieve it instantly with a global shortcut.",
-      "copyright": "Copyright © 2024 ClipFlow Contributors",
-      "category": "DeveloperTool",
-      "license": "MIT",
-      "licenseFile": "../LICENSE",
-      "windows": {
-        "certificateThumbprint": null,
-        "digestAlgorithm": "sha256",
-        "timestampUrl": "http://timestamp.digicert.com",
-        "webviewInstallMode": {
-          "type": "downloadBootstrapper"
-        }
-      },
-      "macOS": {
-        "entitlements": null,
-        "exceptionDomain": "",
-        "frameworks": [],
-        "providerShortName": null,
-        "signingIdentity": null,
-        "minimumSystemVersion": "10.15"
-      },
-      "linux": {
-        "deb": {
-          "depends": ["libwebkit2gtk-4.1-0", "libayatana-appindicator3-1", "librsvg2-common", "tesseract-ocr"]
-        },
-        "appimage": {
-          "bundleMediaFramework": true
-        }
-      }
-    },
+  "app": {
+    "withGlobalTauri": true,
     "macOSPrivateApi": true,
-    "macOS": {
-      "fullsizeContentView": true,
-      "disableToolbar": true
-    },
-    "plugins": {
-      "sql": {
-        "preload": ["sqlite:clipflow.db"]
-      },
-      "tray": {
-        "icon": "icons/32x32.png"
-      }
-    },
     "windows": [
       {
         "label": "main",
-        "url": "main",
         "title": "ClipFlow",
+        "url": "index.html",
         "width": 520,
         "height": 600,
         "minWidth": 400,
@@ -131,8 +30,8 @@
       },
       {
         "label": "spotlight",
-        "url": "spotlight",
         "title": "ClipFlow Spotlight",
+        "url": "index.html",
         "width": 560,
         "height": 400,
         "minWidth": 400,
@@ -144,12 +43,13 @@
         "alwaysOnTop": true,
         "skipTaskbar": true,
         "visible": false,
+        "center": true,
         "focus": true
       },
       {
         "label": "settings",
-        "url": "settings",
         "title": "ClipFlow Settings",
+        "url": "index.html",
         "width": 520,
         "height": 500,
         "minWidth": 400,
@@ -162,8 +62,45 @@
         "center": true
       }
     ],
+    "trayIcon": {
+      "id": "main",
+      "tooltip": "ClipFlow",
+      "iconPath": "icons/32x32.png",
+      "iconAsTemplate": true,
+      "menuOnLeftClick": true
+    },
     "security": {
       "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.ico"],
+    "category": "DeveloperTool",
+    "shortDescription": "Lightweight cross-platform clipboard manager",
+    "longDescription": "ClipFlow is a lightweight, cross-platform clipboard manager that lives in your system tray.",
+    "windows": {
+      "digestAlgorithm": "sha256",
+      "webviewInstallMode": {
+        "type": "downloadBootstrapper"
+      }
+    },
+    "macOS": {
+      "minimumSystemVersion": "10.15"
+    },
+    "linux": {
+      "deb": {
+        "depends": ["libwebkit2gtk-4.1-0", "libayatana-appindicator3-1", "librsvg2-common", "tesseract-ocr"]
+      },
+      "appimage": {
+        "bundleMediaFramework": true
+      }
+    }
+  },
+  "plugins": {
+    "sql": {
+      "preload": ["sqlite:clipflow.db"]
     }
   }
 }

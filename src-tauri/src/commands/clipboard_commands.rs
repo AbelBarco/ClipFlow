@@ -1,11 +1,10 @@
 use crate::storage::repository::{get_all_clips, delete_clip, clear_all_clips};
 use crate::clipboard::writer::write_to_clipboard;
 use serde::{Deserialize, Serialize};
-use tauri::command;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct ClipItem {
+pub struct ClipItemDto {
     pub id: String,
     pub r#type: String,
     pub content: String,
@@ -16,33 +15,50 @@ pub struct ClipItem {
     pub metadata: Option<serde_json::Value>,
 }
 
-#[command]
-pub async fn get_history() -> Result<Vec<ClipItem>, String> {
+impl From<crate::storage::repository::ClipItem> for ClipItemDto {
+    fn from(c: crate::storage::repository::ClipItem) -> Self {
+        Self {
+            id: c.id,
+            r#type: c.r#type,
+            content: c.content,
+            preview: c.preview,
+            timestamp: c.timestamp,
+            size: c.size,
+            ocr_text: c.ocr_text,
+            metadata: c.metadata,
+        }
+    }
+}
+
+#[tauri::command]
+pub async fn clipboard_get_history() -> Result<Vec<ClipItemDto>, String> {
     let clips = get_all_clips().await?;
     Ok(clips.into_iter().map(Into::into).collect())
 }
 
-#[command]
-pub async fn delete_item(item_id: String) -> Result<(), String> {
-    delete_clip(&item_id).await
+#[tauri::command]
+#[allow(non_snake_case)]
+pub async fn clipboard_delete_item(itemId: String) -> Result<(), String> {
+    delete_clip(&itemId).await
 }
 
-#[command]
-pub async fn clear_history() -> Result<(), String> {
+#[tauri::command]
+pub async fn clipboard_clear_history() -> Result<(), String> {
     clear_all_clips().await
 }
 
-#[command]
-pub async fn paste_item(item_id: String) -> Result<(), String> {
+#[tauri::command]
+#[allow(non_snake_case)]
+pub async fn clipboard_paste_item(itemId: String) -> Result<(), String> {
     let clips = get_all_clips().await?;
-    if let Some(clip) = clips.into_iter().find(|c| c.id == item_id) {
+    if let Some(clip) = clips.into_iter().find(|c| c.id == itemId) {
         write_to_clipboard(&clip.content, &clip.r#type).await
     } else {
         Err("Item not found".to_string())
     }
 }
 
-#[command]
-pub async fn copy_to_clipboard(content: String, r#type: String) -> Result<(), String> {
+#[tauri::command]
+pub async fn clipboard_copy_to_clipboard(content: String, r#type: String) -> Result<(), String> {
     write_to_clipboard(&content, &r#type).await
 }

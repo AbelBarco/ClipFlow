@@ -1,5 +1,10 @@
 <script lang="ts">
-  import '../lib/features/ui/stores/theme.svelte';
+  import { themeStore } from '$lib/features/ui/stores/theme.svelte';
+  import { onMount } from 'svelte';
+
+  onMount(() => {
+    themeStore.init();
+  });
 </script>
 
 <slot />

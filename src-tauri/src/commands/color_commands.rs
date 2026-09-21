@@ -1,6 +1,5 @@
-use crate::pipeline::color_parser::{convert_color, detect_color};
+use crate::pipeline::color_parser::{convert_color as convert_impl, detect_color as detect_impl};
 use serde::{Deserialize, Serialize};
-use tauri::command;
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -11,12 +10,18 @@ pub struct ColorConversion {
     pub css: String,
 }
 
-#[command]
-pub async fn convert_color(input: String) -> Result<ColorConversion, String> {
-    convert_color(&input).map_err(|e| e.to_string())
+#[tauri::command]
+pub async fn color_convert(input: String) -> Result<ColorConversion, String> {
+    let c = convert_impl(&input).map_err(|e| e.to_string())?;
+    Ok(ColorConversion {
+        hex: c.hex,
+        rgb: c.rgb,
+        hsl: c.hsl,
+        css: c.css,
+    })
 }
 
-#[command]
-pub async fn detect_color(input: String) -> Result<bool, String> {
-    Ok(detect_color(&input))
+#[tauri::command]
+pub async fn color_detect(input: String) -> Result<bool, String> {
+    Ok(detect_impl(&input))
 }

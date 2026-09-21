@@ -1,10 +1,16 @@
 <script lang="ts">
   import Kbd from '$lib/features/ui/components/Kbd.svelte';
   import { settingsStore } from '../stores/settings.svelte';
-  import { invoke } from '@tauri-apps/api/core';
 
-  let shortcutInput: string = $derived(settingsStore.settings.general.globalShortcut);
+  let shortcutInput: string = $state(settingsStore.settings.general.globalShortcut);
   let isRecording = $state(false);
+
+  // Keep the input in sync if settings are (re)loaded from the backend.
+  $effect(() => {
+    if (!isRecording) {
+      shortcutInput = settingsStore.settings.general.globalShortcut;
+    }
+  });
 
   function handleShortcutChange(e: KeyboardEvent) {
     e.preventDefault();
@@ -16,13 +22,19 @@
     else if (e.key !== 'Control' && e.key !== 'Shift' && e.key !== 'Alt' && e.key !== 'Meta') {
       parts.push(e.key);
     }
-    shortcutInput = parts.join('+');
-    isRecording = false;
-    settingsStore.updateGeneral({ globalShortcut: shortcutInput });
+    if (parts.length > 0) {
+      shortcutInput = parts.join('+');
+      isRecording = false;
+      settingsStore.updateGeneral({ globalShortcut: shortcutInput });
+    }
   }
 
   function startRecording() {
     isRecording = true;
+  }
+
+  function stopRecording() {
+    isRecording = false;
   }
 </script>
 
@@ -39,9 +51,9 @@
         bind:value={shortcutInput}
         class="input font-mono text-center"
         readonly
-        on:focus={startRecording}
-        on:keydown={handleShortcutChange}
-        on:blur={() => isRecording = false}
+        onfocus={startRecording}
+        onkeydown={handleShortcutChange}
+        onblur={stopRecording}
         aria-label="Global shortcut"
       />
       {#if isRecording}
@@ -64,7 +76,7 @@
       max="5000"
       step="50"
       class="input w-[100px]"
-      on:input={() => settingsStore.updateGeneral({ maxHistoryItems: settingsStore.settings.general.maxHistoryItems })}
+      oninput={() => settingsStore.updateGeneral({ maxHistoryItems: settingsStore.settings.general.maxHistoryItems })}
     />
     <p class="text-xs text-surface-500 dark:text-surface-400 mt-1">Older items will be removed automatically</p>
   </div>
@@ -78,7 +90,7 @@
       type="checkbox"
       bind:checked={settingsStore.settings.general.launchAtStartup}
       class="w-5 h-5 rounded border-surface-300 text-primary-600 focus:ring-primary-500"
-      on:change={() => settingsStore.updateGeneral({ launchAtStartup: settingsStore.settings.general.launchAtStartup })}
+      onchange={() => settingsStore.updateGeneral({ launchAtStartup: settingsStore.settings.general.launchAtStartup })}
     />
   </div>
 
@@ -91,7 +103,7 @@
       type="checkbox"
       bind:checked={settingsStore.settings.general.showNotifications}
       class="w-5 h-5 rounded border-surface-300 text-primary-600 focus:ring-primary-500"
-      on:change={() => settingsStore.updateGeneral({ showNotifications: settingsStore.settings.general.showNotifications })}
+      onchange={() => settingsStore.updateGeneral({ showNotifications: settingsStore.settings.general.showNotifications })}
     />
   </div>
 
@@ -100,7 +112,7 @@
     <select
       bind:value={settingsStore.settings.general.theme}
       class="input w-[180px]"
-      on:change={() => settingsStore.updateGeneral({ theme: settingsStore.settings.general.theme })}
+      onchange={() => settingsStore.updateGeneral({ theme: settingsStore.settings.general.theme })}
     >
       <option value="system">System</option>
       <option value="light">Light</option>
