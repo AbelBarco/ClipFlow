@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { localeStore } from '$lib/features/i18n/stores/locale.svelte';
   import { settingsStore } from '../stores/settings.svelte';
 
   let newApp: string = $state('');
@@ -16,22 +17,25 @@
 </script>
 
 <fieldset class="card p-4 space-y-4">
-  <legend class="text-sm font-medium text-surface-900 dark:text-surface-50">Excluded Applications</legend>
+  <legend class="text-sm font-medium text-surface-900 dark:text-surface-50">
+    {localeStore.t('excTitle')}
+  </legend>
 
   <p class="text-sm text-surface-500 dark:text-surface-400">
-    Items copied from these applications won't be saved to history.
-    Password managers are excluded automatically when <strong>Respect concealed types</strong> is enabled.
+    {localeStore.t('excDesc')}
   </p>
 
   <div class="flex items-center gap-2">
     <input
       type="text"
       bind:value={newApp}
-      placeholder="Application name (e.g., 1Password)"
+      placeholder={localeStore.t('excPlaceholder')}
       class="input flex-1"
       onkeydown={handleKeyDown}
     />
-    <button class="btn-secondary" onclick={addApp} disabled={!newApp.trim()}>Add</button>
+    <button class="btn-secondary" onclick={addApp} disabled={!newApp.trim()}>
+      {localeStore.t('excAdd')}
+    </button>
   </div>
 
   <div class="flex flex-wrap gap-2">
@@ -41,7 +45,7 @@
         <button
           class="text-surface-500 hover:text-red-500"
           onclick={() => settingsStore.removeExcludedApp(app)}
-          aria-label={`Remove ${app}`}
+          aria-label={`${localeStore.t('itemDeleteTitle')}: ${app}`}
         >
           ×
         </button>
@@ -51,8 +55,10 @@
 
   <div class="flex items-center justify-between pt-2 border-t border-surface-200 dark:border-surface-700">
     <div>
-      <label class="text-sm font-medium text-surface-700 dark:text-surface-300">Respect Concealed Types</label>
-      <p class="text-xs text-surface-500 dark:text-surface-400">Automatically exclude password fields and concealed input</p>
+      <label class="text-sm font-medium text-surface-700 dark:text-surface-300">
+        {localeStore.t('excRespect')}
+      </label>
+      <p class="text-xs text-surface-500 dark:text-surface-400">{localeStore.t('excRespectHint')}</p>
     </div>
     <input
       type="checkbox"

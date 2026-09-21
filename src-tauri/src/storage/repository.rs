@@ -61,6 +61,13 @@ impl From<crate::pipeline::ClipItem> for ClipItem {
 }
 
 pub async fn add_clip(item: ClipItem) -> Result<(), String> {
+    // Respect the user-configured history limit (defaults to 500).
+    let max_items: i64 = crate::config::app_config::get_config()
+        .await
+        .map(|c| c.general.max_history_items as i64)
+        .unwrap_or(500)
+        .clamp(50, 5000);
+
     let ocr_text = item.ocr_text.clone().unwrap_or_default();
     let metadata = item
         .metadata
@@ -93,14 +100,14 @@ pub async fn add_clip(item: ClipItem) -> Result<(), String> {
             params![id, clip_type, content, preview, timestamp, size, ocr_text, metadata],
         )?;
 
-        // Rotate if needed (keep max 500)
+        // Rotate if needed (keep the configured max)
         let count: i64 = conn.query_row("SELECT COUNT(*) FROM clip_items", [], |row| row.get(0))?;
-        if count > 500 {
+        if count > max_items {
             conn.execute(
                 "DELETE FROM clip_items WHERE id IN (
                     SELECT id FROM clip_items ORDER BY timestamp ASC LIMIT ?1
                 )",
-                params![count - 500],
+                params![count - max_items],
             )?;
         }
 
@@ -112,7 +119,7 @@ pub async fn get_all_clips() -> Result<Vec<ClipItem>, String> {
     with_db(|conn| {
         let mut stmt = conn.prepare(
             "SELECT id, type, content, preview, timestamp, size, ocr_text, metadata
-             FROM clip_items ORDER BY timestamp DESC LIMIT 500",
+             FROM clip_items ORDER BY timestamp DESC LIMIT 5000",
         )?;
 
         let rows = stmt.query_map([], |row| {

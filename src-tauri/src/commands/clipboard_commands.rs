@@ -39,12 +39,23 @@ pub async fn clipboard_get_history() -> Result<Vec<ClipItemDto>, String> {
 #[tauri::command]
 #[allow(non_snake_case)]
 pub async fn clipboard_delete_item(itemId: String) -> Result<(), String> {
+    // If it was an image, remove its file too (best effort).
+    if let Ok(clips) = get_all_clips().await {
+        if let Some(clip) = clips.into_iter().find(|c| c.id == itemId) {
+            if clip.r#type == "image" {
+                let _ = crate::storage::image_store::delete_image(&clip.content).await;
+            }
+        }
+    }
     delete_clip(&itemId).await
 }
 
 #[tauri::command]
-pub async fn clipboard_clear_history() -> Result<(), String> {
-    clear_all_clips().await
+pub async fn clipboard_clear_history(app: tauri::AppHandle) -> Result<(), String> {
+    clear_all_clips().await?;
+    // Clean orphaned image files as well (best effort).
+    let _ = crate::storage::image_store::clean_images_dir(&app).await;
+    Ok(())
 }
 
 #[tauri::command]
@@ -61,4 +72,21 @@ pub async fn clipboard_paste_item(itemId: String) -> Result<(), String> {
 #[tauri::command]
 pub async fn clipboard_copy_to_clipboard(content: String, r#type: String) -> Result<(), String> {
     write_to_clipboard(&content, &r#type).await
+}
+
+/// Return an image history item as a `data:` URL for preview in the webview.
+/// `content` of image items is an absolute file path, which the webview
+/// cannot load directly.
+#[tauri::command]
+#[allow(non_snake_case)]
+pub async fn clipboard_get_image(itemId: String) -> Result<String, String> {
+    let clips = get_all_clips().await?;
+    let clip = clips
+        .into_iter()
+        .find(|c| c.id == itemId)
+        .ok_or("Item not found")?;
+    if clip.r#type != "image" {
+        return Err("Item is not an image".to_string());
+    }
+    crate::storage::image_store::load_data_url(&clip.content).await
 }

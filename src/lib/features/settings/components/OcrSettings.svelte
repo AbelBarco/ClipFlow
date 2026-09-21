@@ -1,32 +1,28 @@
 <script lang="ts">
+  import { LANGUAGES } from '$lib/features/i18n/translations';
+  import { localeStore } from '$lib/features/i18n/stores/locale.svelte';
   import { settingsStore } from '../stores/settings.svelte';
 
-  const languages = [
-    { code: 'eng', name: 'English' },
-    { code: 'spa', name: 'Spanish' },
-    { code: 'fra', name: 'French' },
-    { code: 'deu', name: 'German' },
-    { code: 'chi_sim', name: 'Chinese (Simplified)' },
-    { code: 'jpn', name: 'Japanese' },
-    { code: 'kor', name: 'Korean' },
-    { code: 'rus', name: 'Russian' },
-    { code: 'por', name: 'Portuguese' },
-    { code: 'ita', name: 'Italian' }
-  ];
+  // El selector de OCR muestra los idiomas con su nombre nativo y usa el
+  // código Tesseract que el backend aplica de verdad al reconocer.
+  const ocrLanguages = LANGUAGES.map((l) => ({ code: l.ocr, name: l.name, flag: l.flag }));
 </script>
 
 <fieldset class="card p-4 space-y-4">
-  <legend class="text-sm font-medium text-surface-900 dark:text-surface-50">OCR (Optical Character Recognition)</legend>
+  <legend class="text-sm font-medium text-surface-900 dark:text-surface-50">
+    {localeStore.t('ocrTitle')}
+  </legend>
 
   <p class="text-sm text-surface-500 dark:text-surface-400">
-    Extract text from images in your clipboard history. Uses native OS APIs:
-    Vision (macOS), WinRT (Windows), Tesseract (Linux).
+    {localeStore.t('ocrDesc')}
   </p>
 
   <div class="flex items-center justify-between">
     <div>
-      <label class="text-sm font-medium text-surface-700 dark:text-surface-300">Enable OCR</label>
-      <p class="text-xs text-surface-500 dark:text-surface-400">Process images for text extraction</p>
+      <label class="text-sm font-medium text-surface-700 dark:text-surface-300">
+        {localeStore.t('ocrEnable')}
+      </label>
+      <p class="text-xs text-surface-500 dark:text-surface-400">{localeStore.t('ocrEnableHint')}</p>
     </div>
     <input
       type="checkbox"
@@ -38,22 +34,26 @@
 
   {#if settingsStore.settings.ocr.enabled}
     <div>
-      <label class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">Language</label>
+      <label class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">
+        {localeStore.t('ocrLanguage')}
+      </label>
       <select
         bind:value={settingsStore.settings.ocr.language}
         class="input w-[200px]"
         onchange={() => settingsStore.updateOcr({ language: settingsStore.settings.ocr.language })}
       >
-        {#each languages as lang}
-          <option value={lang.code}>{lang.name}</option>
+        {#each ocrLanguages as lang}
+          <option value={lang.code}>{lang.flag} {lang.name}</option>
         {/each}
       </select>
     </div>
 
     <div class="flex items-center justify-between">
       <div>
-        <label class="text-sm font-medium text-surface-700 dark:text-surface-300">Auto-run on new images</label>
-        <p class="text-xs text-surface-500 dark:text-surface-400">Automatically run OCR when images are copied</p>
+        <label class="text-sm font-medium text-surface-700 dark:text-surface-300">
+          {localeStore.t('ocrAutoRun')}
+        </label>
+        <p class="text-xs text-surface-500 dark:text-surface-400">{localeStore.t('ocrAutoRunHint')}</p>
       </div>
       <input
         type="checkbox"

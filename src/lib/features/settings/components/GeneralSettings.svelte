@@ -1,5 +1,7 @@
 <script lang="ts">
   import Kbd from '$lib/features/ui/components/Kbd.svelte';
+  import { localeStore } from '$lib/features/i18n/stores/locale.svelte';
+  import { themeStore } from '$lib/features/ui/stores/theme.svelte';
   import { settingsStore } from '../stores/settings.svelte';
 
   let shortcutInput: string = $state(settingsStore.settings.general.globalShortcut);
@@ -36,14 +38,23 @@
   function stopRecording() {
     isRecording = false;
   }
+
+  function handleThemeChange(e: Event) {
+    const select = e.currentTarget as HTMLSelectElement;
+    const theme = select.value as 'light' | 'dark' | 'system';
+    settingsStore.updateGeneral({ theme });
+    themeStore.setTheme(theme);
+  }
 </script>
 
 <fieldset class="card p-4 space-y-4">
-  <legend class="text-sm font-medium text-surface-900 dark:text-surface-50">General</legend>
+  <legend class="text-sm font-medium text-surface-900 dark:text-surface-50">
+    {localeStore.t('generalTitle')}
+  </legend>
 
   <div>
     <label class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">
-      Global Shortcut
+      {localeStore.t('generalShortcut')}
     </label>
     <div class="flex items-center gap-2">
       <input
@@ -54,20 +65,24 @@
         onfocus={startRecording}
         onkeydown={handleShortcutChange}
         onblur={stopRecording}
-        aria-label="Global shortcut"
+        aria-label={localeStore.t('generalShortcut')}
       />
       {#if isRecording}
-        <span class="text-xs text-primary-600 dark:text-primary-400">Press keys...</span>
+        <span class="text-xs text-primary-600 dark:text-primary-400">
+          {localeStore.t('generalPressKeys')}
+        </span>
       {:else}
         <Kbd keys={shortcutInput.split('+')} />
       {/if}
     </div>
-    <p class="text-xs text-surface-500 dark:text-surface-400 mt-1">Press keys to set shortcut</p>
+    <p class="text-xs text-surface-500 dark:text-surface-400 mt-1">
+      {localeStore.t('generalShortcutHint')}
+    </p>
   </div>
 
   <div>
     <label class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">
-      Max History Items
+      {localeStore.t('generalMaxHistory')}
     </label>
     <input
       type="number"
@@ -78,13 +93,17 @@
       class="input w-[100px]"
       oninput={() => settingsStore.updateGeneral({ maxHistoryItems: settingsStore.settings.general.maxHistoryItems })}
     />
-    <p class="text-xs text-surface-500 dark:text-surface-400 mt-1">Older items will be removed automatically</p>
+    <p class="text-xs text-surface-500 dark:text-surface-400 mt-1">
+      {localeStore.t('generalMaxHistoryHint')}
+    </p>
   </div>
 
   <div class="flex items-center justify-between">
     <div>
-      <label class="text-sm font-medium text-surface-700 dark:text-surface-300">Launch at Startup</label>
-      <p class="text-xs text-surface-500 dark:text-surface-400">Start ClipFlow when you log in</p>
+      <label class="text-sm font-medium text-surface-700 dark:text-surface-300">
+        {localeStore.t('generalLaunch')}
+      </label>
+      <p class="text-xs text-surface-500 dark:text-surface-400">{localeStore.t('generalLaunchHint')}</p>
     </div>
     <input
       type="checkbox"
@@ -96,8 +115,10 @@
 
   <div class="flex items-center justify-between">
     <div>
-      <label class="text-sm font-medium text-surface-700 dark:text-surface-300">Show Notifications</label>
-      <p class="text-xs text-surface-500 dark:text-surface-400">Notify when items are copied</p>
+      <label class="text-sm font-medium text-surface-700 dark:text-surface-300">
+        {localeStore.t('generalNotif')}
+      </label>
+      <p class="text-xs text-surface-500 dark:text-surface-400">{localeStore.t('generalNotifHint')}</p>
     </div>
     <input
       type="checkbox"
@@ -108,15 +129,17 @@
   </div>
 
   <div>
-    <label class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">Theme</label>
+    <label class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">
+      {localeStore.t('generalTheme')}
+    </label>
     <select
-      bind:value={settingsStore.settings.general.theme}
+      value={settingsStore.settings.general.theme}
       class="input w-[180px]"
-      onchange={() => settingsStore.updateGeneral({ theme: settingsStore.settings.general.theme })}
+      onchange={handleThemeChange}
     >
-      <option value="system">System</option>
-      <option value="light">Light</option>
-      <option value="dark">Dark</option>
+      <option value="system">{localeStore.t('themeSystem')}</option>
+      <option value="light">{localeStore.t('themeLight')}</option>
+      <option value="dark">{localeStore.t('themeDark')}</option>
     </select>
   </div>
 </fieldset>

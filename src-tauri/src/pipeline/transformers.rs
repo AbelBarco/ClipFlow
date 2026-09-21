@@ -143,3 +143,16 @@ fn minify_json(text: &str) -> Result<String, String> {
     let value: serde_json::Value = serde_json::from_str(text).map_err(|e| e.to_string())?;
     serde_json::to_string(&value).map_err(|e| e.to_string())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn transforms_text() {
+        assert_eq!(apply_transform("hola", "uppercase").unwrap(), "HOLA");
+        assert_eq!(apply_transform("Hola Mundo", "snake_case").unwrap(), "hola_mundo");
+        assert!(apply_transform("x", "no_existe").is_err());
+        assert_eq!(list_transformers().len(), 15);
+    }
+}

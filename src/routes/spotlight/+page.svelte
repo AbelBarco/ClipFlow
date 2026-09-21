@@ -4,11 +4,42 @@
   import ClipboardList from '$lib/features/clipboard/components/ClipboardList.svelte';
   import SearchBar from '$lib/features/clipboard/components/SearchBar.svelte';
   import EmptyState from '$lib/features/ui/components/EmptyState.svelte';
+  import Kbd from '$lib/features/ui/components/Kbd.svelte';
+  import { localeStore } from '$lib/features/i18n/stores/locale.svelte';
   import { clipboardStore } from '$lib/features/clipboard/stores/clipboard.svelte';
   import type { ClipItem } from '$lib/features/clipboard/types/clipboard.types';
   import { invoke } from '@tauri-apps/api/core';
 
+  const PAGE_SIZE = 40;
+  let visibleCount = $state(PAGE_SIZE);
+  let lastSig = '';
 
+  $effect(() => {
+    const sig = clipboardStore.filter.query;
+    if (sig !== lastSig) {
+      lastSig = sig;
+      visibleCount = PAGE_SIZE;
+    }
+    // Selección válida al filtrar o al llegar items nuevos.
+    const items = clipboardStore.filteredItems;
+    if (items.length === 0) {
+      clipboardStore.selectItem(null);
+    } else if (!items.some((i) => i.id === clipboardStore.selectedId)) {
+      clipboardStore.selectItem(items[0].id);
+    }
+  });
+
+  function moveSelection(dir: 1 | -1) {
+    const items = clipboardStore.filteredItems;
+    if (items.length === 0) return;
+    const idx = items.findIndex((i) => i.id === clipboardStore.selectedId);
+    const next = idx === -1 ? 0 : (idx + dir + items.length) % items.length;
+    if (next >= visibleCount) visibleCount = next + 1;
+    clipboardStore.selectItem(items[next].id);
+    document
+      .querySelector(`[data-item-id="${items[next].id}"]`)
+      ?.scrollIntoView({ block: 'nearest' });
+  }
 
   onMount(() => {
     void clipboardStore.loadHistory();
@@ -25,9 +56,15 @@
     function handleKeydown(e: KeyboardEvent) {
       if (e.key === 'Escape') {
         void closeWindow();
-      } else if (e.key === 'Enter' && clipboardStore.filteredItems.length > 0) {
-        const first = clipboardStore.filteredItems[0];
-        void handlePaste(first.id);
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        moveSelection(1);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        moveSelection(-1);
+      } else if (e.key === 'Enter' && clipboardStore.selectedId) {
+        e.preventDefault();
+        void handlePaste(clipboardStore.selectedId);
       }
     }
     window.addEventListener('keydown', handleKeydown);
@@ -57,26 +94,48 @@
   }
 </script>
 
-<div class="flex flex-col h-full min-h-[300px] w-full max-w-[560px] mx-auto p-4">
-  <SearchBar bind:value={clipboardStore.filter.query} placeholder="Search clipboard..." autoFocus />
+<div class="flex flex-col h-full min-h-[320px] w-full max-w-[600px] mx-auto p-4">
+  <div class="flex items-center gap-2 mb-2">
+    <img src="/logo.png" alt="ClipFlow" class="w-6 h-6 rounded-md" />
+    <span class="text-sm font-bold text-surface-900 dark:text-surface-50">ClipFlow</span>
+    <span class="text-[11px] text-surface-400 ml-auto">{localeStore.t('spotHint')}</span>
+  </div>
 
-  <div class="flex-1 overflow-hidden mt-3">
+  <SearchBar bind:value={clipboardStore.filter.query} placeholder={localeStore.t('searchSpotlight')} autoFocus />
+
+  <div class="flex-1 overflow-hidden mt-3 min-h-[120px]">
     {#if clipboardStore.filteredItems.length === 0}
       <EmptyState
-        title={clipboardStore.filter.query ? 'No matches found' : 'Clipboard is empty'}
-        description={clipboardStore.filter.query ? 'Try a different search term' : 'Copy something to get started'}
+        title={clipboardStore.filter.query
+          ? localeStore.t('spotNoResultsTitle')
+          : localeStore.t('spotEmptyTitle')}
+        description={clipboardStore.filter.query
+          ? localeStore.t('spotNoResultsDesc')
+          : localeStore.t('spotEmptyDesc')}
         compact
       />
     {:else}
-      <ClipboardList items={clipboardStore.filteredItems} onPaste={handlePaste} compact />
+      <ClipboardList
+        items={clipboardStore.filteredItems.slice(0, visibleCount)}
+        selectedId={clipboardStore.selectedId}
+        onSelect={(id) => clipboardStore.selectItem(id)}
+        onPaste={handlePaste}
+        compact
+      />
+      {#if clipboardStore.filteredItems.length > visibleCount}
+        <button
+          class="btn-secondary w-full mt-1.5 text-xs"
+          onclick={() => (visibleCount += PAGE_SIZE)}
+        >
+          {localeStore.t('showMore', { remaining: clipboardStore.filteredItems.length - visibleCount })}
+        </button>
+      {/if}
     {/if}
   </div>
 
-  <footer class="flex items-center gap-2 mt-3 pt-3 border-t border-surface-200 dark:border-surface-700">
-    <kbd class="text-xs text-surface-500 dark:text-surface-400 px-2 py-0.5 bg-surface-100 dark:bg-surface-800 rounded">
-      Enter
-    </kbd>
-    <span class="text-xs text-surface-500 dark:text-surface-400">Paste selected</span>
-    <span class="text-xs text-surface-400 dark:text-surface-500 ml-auto">Esc to close</span>
+  <footer class="flex items-center gap-2 mt-3 pt-3 border-t border-surface-200 dark:border-surface-700 text-[11px] text-surface-500 dark:text-surface-400">
+    <Kbd keys={['Enter']} /> <span>{localeStore.t('spotPaste')}</span>
+    <Kbd keys={['↑', '↓']} /> <span>{localeStore.t('spotChoose')}</span>
+    <Kbd keys={['Esc']} /> <span class="ml-auto">{localeStore.t('spotClose')}</span>
   </footer>
 </div>

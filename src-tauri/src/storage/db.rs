@@ -69,8 +69,6 @@ pub fn init_test_db() {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     #[test]
     fn test_db_path() {
         let dir = std::env::temp_dir().join("clipflow_test");

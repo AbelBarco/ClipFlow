@@ -50,6 +50,7 @@ pub fn run() {
             commands::clipboard_commands::clipboard_clear_history,
             commands::clipboard_commands::clipboard_paste_item,
             commands::clipboard_commands::clipboard_copy_to_clipboard,
+            commands::clipboard_commands::clipboard_get_image,
             commands::color_commands::color_convert,
             commands::color_commands::color_detect,
             commands::transform_commands::transform_apply,

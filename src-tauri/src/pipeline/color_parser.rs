@@ -169,6 +169,20 @@ fn build_conversion(r: u8, g: u8, b: u8, a: u8) -> Result<ColorConversion, Strin
     Ok(ColorConversion { hex, rgb, hsl, css })
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn converts_hex_and_detects_formats() {
+        assert!(detect_color("#0ea5e9"));
+        assert!(!detect_color("not a color"));
+        let conv = convert_color("#ff0000").expect("valid hex");
+        assert_eq!(conv.hex, "#FF0000");
+        assert_eq!(conv.rgb, "rgb(255, 0, 0)");
+    }
+}
+
 fn rgb_to_hsl(r: u8, g: u8, b: u8) -> (u16, u8, u8) {
     let r = r as f32 / 255.0;
     let g = g as f32 / 255.0;

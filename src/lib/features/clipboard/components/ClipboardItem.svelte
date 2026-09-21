@@ -1,14 +1,37 @@
 <script lang="ts">
-  import ColorPreview from '$lib/features/color/components/ColorPreview.svelte';
   import type { ClipItem } from '../types/clipboard.types';
+  import { localeStore } from '$lib/features/i18n/stores/locale.svelte';
+  import { htmlLangOf } from '$lib/features/i18n/translations';
+  import { getImageDataUrlCached } from '../api/clipboard';
 
   interface Props {
     item: ClipItem;
     compact?: boolean;
+    selected?: boolean;
+    onSelect?: (itemId: string) => void;
     onPaste?: (itemId: string) => Promise<void>;
+    onDelete?: (itemId: string) => Promise<void>;
   }
 
-  let { item, compact = false, onPaste }: Props = $props();
+  let { item, compact = false, selected = false, onSelect, onPaste, onDelete }: Props = $props();
+
+  let thumb: string | null = $state(null);
+
+  // Carga perezosa de la miniatura solo para imágenes.
+  $effect(() => {
+    if (item.type === 'image') {
+      const id = item.id;
+      getImageDataUrlCached(id)
+        .then((url) => {
+          thumb = url;
+        })
+        .catch(() => {
+          thumb = null;
+        });
+    } else {
+      thumb = null;
+    }
+  });
 
   function getTypeIcon(type: string): string {
     const icons: Record<string, string> = {
@@ -21,23 +44,17 @@
     return icons[type] || '📝';
   }
 
-  function getTypeLabel(type: string): string {
-    return type.charAt(0).toUpperCase() + type.slice(1);
-  }
-
   function formatTimestamp(timestamp: number): string {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diff = now.getTime() - date.getTime();
+    const diff = Date.now() - timestamp;
     const minutes = Math.floor(diff / 60000);
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
 
-    if (minutes < 1) return 'Just now';
-    if (minutes < 60) return `${minutes}m ago`;
-    if (hours < 24) return `${hours}h ago`;
-    if (days < 7) return `${days}d ago`;
-    return date.toLocaleDateString();
+    if (minutes < 1) return localeStore.t('itemNow');
+    if (minutes < 60) return localeStore.t('itemMinAgo', { n: minutes });
+    if (hours < 24) return localeStore.t('itemHAgo', { n: hours });
+    if (days < 7) return localeStore.t('itemDAgo', { n: days });
+    return new Date(timestamp).toLocaleDateString(htmlLangOf(localeStore.locale));
   }
 
   function formatSize(bytes: number): string {
@@ -46,85 +63,100 @@
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   }
 
-  async function handleClick() {
-    if (onPaste) {
-      await onPaste(item.id);
-    }
+  function typeLabel(type: string): string {
+    if (type === 'color') return localeStore.t('itemColor');
+    if (type === 'image') return localeStore.t('itemImage');
+    return type;
   }
 
-  async function handleCopy(e: MouseEvent) {
-    e.stopPropagation();
-    try {
-      await navigator.clipboard.writeText(item.content);
-    } catch (err) {
-      console.error('Copy failed:', err);
+  function handleClick() {
+    onSelect?.(item.id);
+    // En spotlight un clic pega directamente.
+    if (onPaste && compact) {
+      void onPaste(item.id);
     }
   }
 
   function handleKeydown(e: KeyboardEvent) {
-    if (e.key === 'Enter') {
-      void handleClick();
+    if (e.key === 'Enter' && onPaste) {
+      e.preventDefault();
+      void onPaste(item.id);
     }
+  }
+
+  function handlePaste(e: MouseEvent) {
+    e.stopPropagation();
+    if (onPaste) void onPaste(item.id);
+  }
+
+  function handleDelete(e: MouseEvent) {
+    e.stopPropagation();
+    if (onDelete) void onDelete(item.id);
   }
 </script>
 
 <div
-  class="card flex items-start gap-3 p-3 w-full text-left item-hover group cursor-pointer {compact ? 'p-2' : ''}"
-  onclick={() => void handleClick()}
+  data-item-id={item.id}
+  class="card flex items-start gap-2.5 p-2.5 w-full text-left item-hover group cursor-pointer
+    {selected ? '!border-primary-500 ring-1 ring-primary-500' : ''} {compact ? '!p-2' : ''}"
+  onclick={handleClick}
   onkeydown={handleKeydown}
-  role="listitem"
+  role="option"
+  aria-selected={selected}
   tabindex="0"
 >
-  <span class="text-lg flex-shrink-0 mt-0.5">{getTypeIcon(item.type)}</span>
+  {#if item.type === 'image'}
+    <span class="w-11 h-11 flex-shrink-0 rounded-lg overflow-hidden bg-surface-100 dark:bg-surface-800 flex items-center justify-center">
+      {#if thumb}
+        <img src={thumb} alt="" class="w-full h-full object-cover" loading="lazy" />
+      {:else}
+        <span class="text-lg">🖼️</span>
+      {/if}
+    </span>
+  {:else if item.type === 'color'}
+    <span
+      class="w-11 h-11 flex-shrink-0 rounded-lg border border-surface-300 dark:border-surface-600"
+      style="background-color: {item.content}"
+      title={item.content}
+    ></span>
+  {:else}
+    <span class="text-lg flex-shrink-0 mt-0.5 w-7 text-center">{getTypeIcon(item.type)}</span>
+  {/if}
 
   <div class="flex-1 min-w-0">
-    <div class="flex items-center gap-2 mb-1">
-      <span class="text-xs font-medium text-surface-600 dark:text-surface-400 capitalize">
-        {getTypeLabel(item.type)}
+    <div class="flex items-center gap-2">
+      <span class="text-[11px] font-semibold uppercase tracking-wide text-surface-500 dark:text-surface-400">
+        {typeLabel(item.type)}
       </span>
-      <span class="text-xs text-surface-400 dark:text-surface-500">
+      <span class="text-[11px] text-surface-400 dark:text-surface-500 ml-auto flex-shrink-0">
         {formatTimestamp(item.timestamp)}
       </span>
     </div>
 
     {#if item.type === 'color'}
-      <ColorPreview color={item.content} />
-    {:else if item.type === 'image'}
-      <div class="aspect-video bg-surface-100 dark:bg-surface-800 rounded-lg overflow-hidden relative">
-        <img src={item.content} alt="Clipboard image" class="w-full h-full object-cover" />
-        {#if item.ocrText}
-          <div class="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-xs p-2">
-            OCR: {item.ocrText.slice(0, 50)}{item.ocrText.length > 50 ? '...' : ''}
-          </div>
-        {/if}
-      </div>
+      <p class="font-mono text-sm text-surface-900 dark:text-surface-100 truncate mt-0.5">{item.content}</p>
+    {:else if item.type !== 'image'}
+      <pre class="text-[13px] text-surface-900 dark:text-surface-100 whitespace-pre-wrap break-words font-mono mt-0.5 {compact ? 'line-clamp-1' : 'line-clamp-2'}">{item.preview}</pre>
     {:else}
-      <pre class="text-sm text-surface-900 dark:text-surface-100 whitespace-pre-wrap break-words font-mono {compact ? 'line-clamp-2' : 'line-clamp-4'}">
-        {item.preview}
-      </pre>
+      <p class="text-[13px] text-surface-700 dark:text-surface-300 truncate mt-0.5">{item.preview}</p>
     {/if}
 
-    {#if item.size > 0 && item.type !== 'color'}
-      <div class="flex items-center gap-2 mt-2 text-xs text-surface-400 dark:text-surface-500">
-        <span>{formatSize(item.size)}</span>
-        {#if item.ocrText}
-          <span class="flex items-center gap-1 text-primary-600 dark:text-primary-400">
-            <span>🔍</span> OCR available
-          </span>
-        {/if}
-      </div>
-    {/if}
+    <div class="flex items-center gap-2 mt-1 text-[11px] text-surface-400 dark:text-surface-500">
+      {#if item.type !== 'color'}<span>{formatSize(item.size)}</span>{/if}
+      {#if item.ocrText}<span class="text-primary-600 dark:text-primary-400">🔍 OCR</span>{/if}
+    </div>
   </div>
 
-  <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-    <button
-      class="btn-ghost p-1.5"
-      onclick={handleCopy}
-      aria-label="Copy to clipboard"
-    >
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-      </svg>
-    </button>
+  <div class="flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity flex-shrink-0">
+    {#if onPaste && !compact}
+      <button class="btn-ghost p-1 text-xs" onclick={handlePaste} title={localeStore.t('itemPasteTitle')} aria-label={localeStore.t('itemPasteTitle')}>
+        ⤵️
+      </button>
+    {/if}
+    {#if onDelete}
+      <button class="btn-ghost p-1 text-xs" onclick={handleDelete} title={localeStore.t('itemDeleteTitle')} aria-label={localeStore.t('itemDeleteTitle')}>
+        🗑️
+      </button>
+    {/if}
   </div>
 </div>

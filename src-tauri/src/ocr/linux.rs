@@ -8,15 +8,15 @@ impl LinuxOcrProvider {
         Self
     }
 
-    pub async fn recognize(&self, image_path: &str) -> Result<String, String> {
+    pub async fn recognize(&self, image_path: &str, language: &str) -> Result<String, String> {
         let path = Path::new(image_path);
         if !path.exists() {
             return Err("Image file not found".to_string());
         }
 
-        // Use Tesseract via command line
+        // Use Tesseract via command line with the language chosen in settings.
         let output = Command::new("tesseract")
-            .args([image_path, "stdout", "-l", "eng"])
+            .args([image_path, "stdout", "-l", language])
             .output()
             .await
             .map_err(|e| format!("Failed to run tesseract: {}", e))?;

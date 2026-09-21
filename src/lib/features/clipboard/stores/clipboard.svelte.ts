@@ -21,11 +21,18 @@ class ClipboardStore implements ClipboardState {
 
   get filteredItems(): ClipItem[] {
     const query = this.filter.query.trim();
-    if (!query) {
-      return this.items;
+    const types = this.filter.types;
+
+    let base = this.items;
+    if (types.length > 0) {
+      base = base.filter((item) => types.includes(item.type));
     }
-    const results = this.fuse.search(query);
-    return results.map((r) => r.item);
+    if (!query) {
+      return base;
+    }
+    // Fuse busca sobre todo el historial; luego aplicamos el filtro de tipo.
+    const ids = new Set(this.fuse.search(query).map((r) => r.item.id));
+    return base.filter((item) => ids.has(item.id));
   }
 
   async loadHistory(): Promise<void> {

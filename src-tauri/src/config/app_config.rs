@@ -8,6 +8,9 @@ pub struct AppConfig {
     pub general: GeneralSettings,
     pub exclusions: ExclusionSettings,
     pub ocr: OcrSettings,
+    /// Native offline spell/grammar corrector preferences.
+    #[serde(default)]
+    pub corrector: CorrectorSettings,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -18,6 +21,9 @@ pub struct GeneralSettings {
     pub launch_at_startup: bool,
     pub show_notifications: bool,
     pub theme: String,
+    /// UI locale code: en | es | fr | de | pt | it | zh | ja | ko | ru
+    #[serde(default = "default_ui_language")]
+    pub language: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -36,6 +42,35 @@ pub struct OcrSettings {
     pub auto_run: bool,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CorrectorSettings {
+    pub enabled: bool,
+    /// UI locale code or "auto" (follow interface language).
+    #[serde(default = "default_corrector_language")]
+    pub language: String,
+    #[serde(default)]
+    pub auto_correct: bool,
+}
+
+impl Default for CorrectorSettings {
+    fn default() -> Self {
+        Self {
+            enabled: true,
+            language: "auto".to_string(),
+            auto_correct: false,
+        }
+    }
+}
+
+fn default_ui_language() -> String {
+    "es".to_string()
+}
+
+fn default_corrector_language() -> String {
+    "auto".to_string()
+}
+
 impl Default for AppConfig {
     fn default() -> Self {
         Self {
@@ -45,6 +80,7 @@ impl Default for AppConfig {
                 launch_at_startup: false,
                 show_notifications: true,
                 theme: "system".to_string(),
+                language: default_ui_language(),
             },
             exclusions: ExclusionSettings {
                 excluded_apps: vec![
@@ -61,6 +97,7 @@ impl Default for AppConfig {
                 language: "eng".to_string(),
                 auto_run: false,
             },
+            corrector: CorrectorSettings::default(),
         }
     }
 }

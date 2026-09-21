@@ -4,13 +4,15 @@
   import SpotlightPage from './routes/spotlight/+page.svelte';
   import SettingsPage from './routes/settings/+page.svelte';
   import { themeStore } from '$lib/features/ui/stores/theme.svelte';
+  import { localeStore } from '$lib/features/i18n/stores/locale.svelte';
 
   let windowLabel: string = $state('main');
   let ready: boolean = $state(false);
 
   onMount(async () => {
-    // Apply persisted theme as early as possible.
+    // Apply persisted theme and language as early as possible.
     themeStore.init();
+    localeStore.init();
 
     try {
       const { getCurrentWindow } = await import('@tauri-apps/api/window');
@@ -35,7 +37,7 @@
   {/if}
 {:else}
   <div class="flex items-center justify-center min-h-screen">
-    <p class="text-sm text-surface-500">Loading ClipFlow…</p>
+    <p class="text-sm text-surface-500">{localeStore.t('appLoading')}</p>
   </div>
 {/if}
 

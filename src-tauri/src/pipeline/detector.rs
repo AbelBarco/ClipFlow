@@ -51,6 +51,19 @@ fn is_color(content: &str) -> bool {
         || HSLA_REGEX.is_match(content)
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn detects_color_url_and_text() {
+        assert_eq!(detect_type("#ff0000", None), "color");
+        assert_eq!(detect_type("rgb(255, 0, 0)", None), "color");
+        assert_eq!(detect_type("https://example.com", None), "url");
+        assert_eq!(detect_type("hello world", None), "text");
+    }
+}
+
 fn is_code(content: &str) -> bool {
     // Heuristic: check for common code patterns
     let lines: Vec<&str> = content.lines().collect();

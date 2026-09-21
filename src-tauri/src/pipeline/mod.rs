@@ -22,6 +22,20 @@ pub fn process_clipboard_content(content: &[u8], mime_type: Option<&str>) -> Cli
     }
 }
 
+/// Build a history item for a captured image stored at `path`.
+pub fn process_image_content(path: String, width: usize, height: usize, byte_len: usize) -> ClipItem {
+    ClipItem {
+        id: uuid::Uuid::new_v4().to_string(),
+        r#type: "image".to_string(),
+        content: path,
+        preview: format!("Imagen {}×{} px", width, height),
+        timestamp: chrono::Utc::now().timestamp_millis(),
+        size: byte_len as i64,
+        ocr_text: None,
+        metadata: Some(serde_json::json!({ "width": width, "height": height })),
+    }
+}
+
 fn create_preview(content: &str, clip_type: &str) -> String {
     match clip_type {
         "image" => "[Image]".to_string(),
@@ -34,6 +48,19 @@ fn create_preview(content: &str, clip_type: &str) -> String {
                 content.to_string()
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::process_image_content;
+
+    #[test]
+    fn builds_image_item() {
+        let item = process_image_content("/tmp/x.png".to_string(), 800, 600, 123);
+        assert_eq!(item.r#type, "image");
+        assert_eq!(item.preview, "Imagen 800×600 px");
+        assert!(!item.id.is_empty());
     }
 }
 

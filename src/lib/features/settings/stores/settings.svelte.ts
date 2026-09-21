@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core';
-import type { AppSettings, GeneralSettings, ExclusionSettings, OcrSettings } from '../types/settings.types';
+import type { AppSettings, GeneralSettings, ExclusionSettings, OcrSettings, CorrectorSettings } from '../types/settings.types';
 import { DEFAULT_SETTINGS } from '../types/settings.types';
 
 class SettingsStore {
@@ -11,7 +11,16 @@ class SettingsStore {
     this.isLoading = true;
     try {
       const loaded = await invoke<AppSettings>('settings_get');
-      this.settings = { ...DEFAULT_SETTINGS, ...loaded };
+      // Merge section by section so configs saved by older versions
+      // (without `language` or `corrector`) keep working.
+      this.settings = {
+        ...DEFAULT_SETTINGS,
+        ...loaded,
+        general: { ...DEFAULT_SETTINGS.general, ...(loaded.general ?? {}) },
+        exclusions: { ...DEFAULT_SETTINGS.exclusions, ...(loaded.exclusions ?? {}) },
+        ocr: { ...DEFAULT_SETTINGS.ocr, ...(loaded.ocr ?? {}) },
+        corrector: { ...DEFAULT_SETTINGS.corrector, ...(loaded.corrector ?? {}) }
+      };
       this.hasChanges = false;
     } catch (error) {
       console.error('Failed to load settings:', error);
@@ -58,6 +67,11 @@ class SettingsStore {
 
   updateOcr(ocr: Partial<OcrSettings>): void {
     this.settings.ocr = { ...this.settings.ocr, ...ocr };
+    this.hasChanges = true;
+  }
+
+  updateCorrector(corrector: Partial<CorrectorSettings>): void {
+    this.settings.corrector = { ...this.settings.corrector, ...corrector };
     this.hasChanges = true;
   }
 
