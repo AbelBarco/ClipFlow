@@ -15,6 +15,7 @@
     sans-serif;
   line-height: 1.5;
   font-weight: 400;
+  /* El store lo ajusta a `light`/`dark` según el tema resuelto. */
   color-scheme: light dark;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -33,12 +34,9 @@ body {
   background-color: theme("colors.surface.50");
 }
 
-@media (prefers-color-scheme: dark) {
-  body {
-    background-color: theme("colors.surface.950");
-  }
-}
-
+/* El tema lo resuelve el store (clase `dark` en <html>), no esta media
+   query: si se dejara aquí, un SO en oscuro pintaría el fondo oscuro
+   aunque el usuario haya forzado el modo claro. */
 .dark body {
   background-color: theme("colors.surface.950");
 }

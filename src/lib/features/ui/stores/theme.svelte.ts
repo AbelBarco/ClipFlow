@@ -1,5 +1,9 @@
 type Theme = "light" | "dark" | "system";
 
+function isTheme(value: unknown): value is Theme {
+  return value === "light" || value === "dark" || value === "system";
+}
+
 class ThemeStore {
   theme: Theme = $state("system");
   resolvedTheme: "light" | "dark" = $state("light");
@@ -15,8 +19,8 @@ class ThemeStore {
     }
     this.initialized = true;
     try {
-      const stored = localStorage.getItem("theme") as Theme | null;
-      if (stored === "light" || stored === "dark" || stored === "system") {
+      const stored = localStorage.getItem("theme");
+      if (isTheme(stored)) {
         this.theme = stored;
       }
     } catch {
@@ -27,7 +31,33 @@ class ThemeStore {
     this.watchSystemTheme();
   }
 
+  /**
+   * User action in THIS window: apply, remember locally and tell the other
+   * windows (main/spotlight/settings each run their own JS context).
+   */
   setTheme(theme: Theme): void {
+    this.applyLocalTheme(theme);
+    void this.broadcast(theme);
+  }
+
+  /**
+   * Theme arriving from the backend or from another window: apply and
+   * remember locally, but do NOT re-broadcast (avoids echo loops).
+   */
+  applyRemoteTheme(raw: unknown): void {
+    if (!isTheme(raw)) {
+      return;
+    }
+    if (raw === this.theme) {
+      // Still re-apply: the OS theme may have changed under "system".
+      this.updateResolvedTheme();
+      this.applyTheme();
+      return;
+    }
+    this.applyLocalTheme(raw);
+  }
+
+  private applyLocalTheme(theme: Theme): void {
     this.theme = theme;
     try {
       localStorage.setItem("theme", theme);
@@ -36,6 +66,15 @@ class ThemeStore {
     }
     this.updateResolvedTheme();
     this.applyTheme();
+  }
+
+  private async broadcast(theme: Theme): Promise<void> {
+    try {
+      const { emit } = await import("@tauri-apps/api/event");
+      await emit("theme-changed", { theme });
+    } catch {
+      // Not running inside Tauri (browser dev) — nothing to sync.
+    }
   }
 
   private updateResolvedTheme(): void {
@@ -75,6 +114,8 @@ class ThemeStore {
     } else {
       root.classList.remove("dark");
     }
+    // Scrollbars, form controls, etc. follow the resolved theme.
+    root.style.colorScheme = this.resolvedTheme;
   }
 }
 

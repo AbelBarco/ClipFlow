@@ -13,8 +13,9 @@
 
   onMount(() => {
     void settingsStore.load().then(() => {
-      // El tema guardado se aplica de inmediato.
-      themeStore.setTheme(settingsStore.settings.general.theme);
+      // Silent apply: App.svelte already synced + listens for changes.
+      // Broadcasting here would just echo back to every window.
+      themeStore.applyRemoteTheme(settingsStore.settings.general.theme);
       // El idioma guardado en el backend manda; si es el valor por defecto
       // de una instalación nueva, se respeta la detección local
       // (localStorage > idioma del navegador).
