@@ -1,5 +1,5 @@
-use crate::storage::repository::{get_all_clips, delete_clip, clear_all_clips};
 use crate::clipboard::writer::write_to_clipboard;
+use crate::storage::repository::{clear_all_clips, delete_clip, get_all_clips, get_clip_by_id};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -36,15 +36,21 @@ pub async fn clipboard_get_history() -> Result<Vec<ClipItemDto>, String> {
     Ok(clips.into_iter().map(Into::into).collect())
 }
 
+/// Fetch one item with its full (decrypted) content, e.g. for the preview
+/// panel, without scanning the whole history table.
+#[tauri::command]
+#[allow(non_snake_case)]
+pub async fn clipboard_get_item(itemId: String) -> Result<Option<ClipItemDto>, String> {
+    Ok(get_clip_by_id(&itemId).await?.map(Into::into))
+}
+
 #[tauri::command]
 #[allow(non_snake_case)]
 pub async fn clipboard_delete_item(itemId: String) -> Result<(), String> {
     // If it was an image, remove its file too (best effort).
-    if let Ok(clips) = get_all_clips().await {
-        if let Some(clip) = clips.into_iter().find(|c| c.id == itemId) {
-            if clip.r#type == "image" {
-                let _ = crate::storage::image_store::delete_image(&clip.content).await;
-            }
+    if let Some(clip) = get_clip_by_id(&itemId).await? {
+        if clip.r#type == "image" {
+            let _ = crate::storage::image_store::delete_image(&clip.content).await;
         }
     }
     delete_clip(&itemId).await
@@ -61,8 +67,7 @@ pub async fn clipboard_clear_history(app: tauri::AppHandle) -> Result<(), String
 #[tauri::command]
 #[allow(non_snake_case)]
 pub async fn clipboard_paste_item(itemId: String) -> Result<(), String> {
-    let clips = get_all_clips().await?;
-    if let Some(clip) = clips.into_iter().find(|c| c.id == itemId) {
+    if let Some(clip) = get_clip_by_id(&itemId).await? {
         write_to_clipboard(&clip.content, &clip.r#type).await
     } else {
         Err("Item not found".to_string())
@@ -80,11 +85,7 @@ pub async fn clipboard_copy_to_clipboard(content: String, r#type: String) -> Res
 #[tauri::command]
 #[allow(non_snake_case)]
 pub async fn clipboard_get_image(itemId: String) -> Result<String, String> {
-    let clips = get_all_clips().await?;
-    let clip = clips
-        .into_iter()
-        .find(|c| c.id == itemId)
-        .ok_or("Item not found")?;
+    let clip = get_clip_by_id(&itemId).await?.ok_or("Item not found")?;
     if clip.r#type != "image" {
         return Err("Item is not an image".to_string());
     }

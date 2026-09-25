@@ -1,20 +1,24 @@
-import { invoke } from '@tauri-apps/api/core';
-import type { ClipItem, ClipboardFilter, ClipboardState } from '../types/clipboard.types';
-import Fuse from 'fuse.js';
+import { invoke } from "@tauri-apps/api/core";
+import type {
+  ClipItem,
+  ClipboardFilter,
+  ClipboardState,
+} from "../types/clipboard.types";
+import Fuse from "fuse.js";
 
 function createFuse(items: ClipItem[]): Fuse<ClipItem> {
   return new Fuse(items, {
-    keys: ['content', 'preview', 'ocrText'],
+    keys: ["content", "preview", "ocrText"],
     threshold: 0.4,
     includeScore: true,
-    minMatchCharLength: 2
+    minMatchCharLength: 2,
   });
 }
 
 class ClipboardStore implements ClipboardState {
   items: ClipItem[] = $state([]);
   selectedId: string | null = $state(null);
-  filter: ClipboardFilter = $state({ query: '', types: [] });
+  filter: ClipboardFilter = $state({ query: "", types: [] });
   isLoading: boolean = $state(false);
 
   private fuse: Fuse<ClipItem> = createFuse([]);
@@ -38,24 +42,24 @@ class ClipboardStore implements ClipboardState {
   async loadHistory(): Promise<void> {
     this.isLoading = true;
     try {
-      const items = await invoke<ClipItem[]>('clipboard_get_history');
+      const items = await invoke<ClipItem[]>("clipboard_get_history");
       this.items = items;
       this.fuse = createFuse(this.items);
     } catch (error) {
-      console.error('Failed to load clipboard history:', error);
+      console.error("Failed to load clipboard history:", error);
     } finally {
       this.isLoading = false;
     }
   }
 
   async deleteItem(id: string): Promise<void> {
-    await invoke('clipboard_delete_item', { itemId: id });
+    await invoke("clipboard_delete_item", { itemId: id });
     this.items = this.items.filter((item) => item.id !== id);
     this.fuse = createFuse(this.items);
   }
 
   async clearHistory(): Promise<void> {
-    await invoke('clipboard_clear_history');
+    await invoke("clipboard_clear_history");
     this.items = [];
     this.fuse = createFuse(this.items);
   }
@@ -70,7 +74,11 @@ class ClipboardStore implements ClipboardState {
   }
 
   addItem(item: ClipItem): void {
-    this.items = [item, ...this.items];
+    // Upsert by id: a re-copied duplicate keeps its id with a fresh
+    // timestamp (see backend `add_clip`), so it jumps back to the top
+    // instead of appearing twice.
+    const rest = this.items.filter((i) => i.id !== item.id);
+    this.items = [item, ...rest];
     this.fuse = createFuse(this.items);
   }
 

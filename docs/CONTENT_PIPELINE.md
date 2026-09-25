@@ -12,6 +12,7 @@ Each stage is a pure Rust function with no side effects, making them easily test
 Classifies clipboard content based on MIME type and content analysis.
 
 ### Input
+
 - Raw clipboard bytes
 - Optional MIME type from clipboard
 
@@ -39,6 +40,7 @@ Classifies clipboard content based on MIME type and content analysis.
 ```
 
 ### Output
+
 ```rust
 pub struct ClipItem {
     id: String,           // UUID v4
@@ -57,12 +59,14 @@ pub struct ClipItem {
 Prevents storing duplicate clipboard content.
 
 ### Algorithm
+
 - FNV-1a 64-bit hash of normalized content
 - Normalization: trim whitespace, normalize line endings
 - Check against recent hashes (in-memory LRU, 1000 entries)
 - Also check database for persistence across restarts
 
 ### Hash Function
+
 ```rust
 fn content_hash(content: &str) -> String {
     let mut hasher = DefaultHasher::new();
@@ -74,25 +78,30 @@ fn content_hash(content: &str) -> String {
 ## Stage 3: Classification & Enrichment
 
 ### Color Enrichment
+
 If type is "color", parse and convert to all formats:
+
 - HEX: `#RRGGBB` or `#RRGGBBAA`
 - RGB: `rgb(r, g, b)` or `rgba(r, g, b, a)`
 - HSL: `hsl(h, s%, l%)` or `hsla(h, s%, l%, a)`
 - CSS: Modern `rgb(r g b / a)` syntax
 
 ### Image Handling
+
 - Save to filesystem: `$APPDATA/clipflow/images/{uuid}.{ext}`
 - Store path in `content` field
 - Generate thumbnail (200x200 max)
 - Queue for OCR if enabled
 
 ### Code Detection Enhancement
+
 - Detect language from shebang, file extension, or keywords
 - Store language in metadata for syntax highlighting
 
 ## Stage 4: Storage (`repository.rs`)
 
 ### Database Schema
+
 ```sql
 CREATE TABLE clip_items (
     id TEXT PRIMARY KEY,
@@ -112,24 +121,27 @@ CREATE INDEX idx_clip_items_type ON clip_items(type);
 ### Operations
 
 **Insert**
+
 ```rust
 INSERT INTO clip_items (id, type, content, preview, timestamp, size, ocr_text, metadata)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 ```
 
 **Query (with pagination)**
+
 ```rust
-SELECT * FROM clip_items 
-ORDER BY timestamp DESC 
+SELECT * FROM clip_items
+ORDER BY timestamp DESC
 LIMIT 500;
 ```
 
 **Rotation (FIFO)**
+
 ```rust
-DELETE FROM clip_items 
+DELETE FROM clip_items
 WHERE id IN (
-    SELECT id FROM clip_items 
-    ORDER BY timestamp ASC 
+    SELECT id FROM clip_items
+    ORDER BY timestamp ASC
     LIMIT ?
 );
 ```
@@ -137,21 +149,24 @@ WHERE id IN (
 ## Stage 5: Notification
 
 Emit Tauri event to frontend:
+
 ```rust
 app.emit("clipboard-item-added", &clip_item)?;
 ```
 
 Frontend receives via:
+
 ```typescript
 // In clipboard store
 app.listen("clipboard-item-added", (event) => {
-    clipboardStore.addItem(event.payload);
+  clipboardStore.addItem(event.payload);
 });
 ```
 
 ## OCR Pipeline (Async, Optional)
 
 Triggered when:
+
 - Image added and `ocr.autoRun = true`
 - User manually requests OCR on image item
 
@@ -160,6 +175,7 @@ Image Path → Platform OCR Provider → Extracted Text → Update Database → 
 ```
 
 ### Providers
+
 - **macOS**: Vision Framework (`VNRecognizeTextRequest`)
 - **Windows**: WinRT `Windows.Media.Ocr`
 - **Linux**: Tesseract CLI (`tesseract stdout -l eng`)
@@ -167,6 +183,7 @@ Image Path → Platform OCR Provider → Extracted Text → Update Database → 
 ## Error Handling
 
 Each stage returns `Result<T, String>`:
+
 - Detection errors → Default to "text"
 - Dedupe errors → Allow insert (fail open)
 - Storage errors → Log and retry
@@ -175,12 +192,14 @@ Each stage returns `Result<T, String>`:
 ## Testing
 
 Unit tests for each stage:
+
 - `detector.rs`: All type detection cases
 - `dedupe.rs`: Hash consistency, collision handling
 - `color_parser.rs`: Round-trip conversions
 - `transformers.rs`: All transformation variants
 
 Integration tests:
+
 - Full pipeline with sample data
 - Database CRUD + rotation
 - Cross-platform clipboard formats

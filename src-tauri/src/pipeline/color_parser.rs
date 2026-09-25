@@ -1,12 +1,17 @@
-use regex::Regex;
 use lazy_static::lazy_static;
+use regex::Regex;
 
 lazy_static! {
-    static ref HEX_REGEX: Regex = Regex::new(r"^#([0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$").unwrap();
-    static ref RGB_REGEX: Regex = Regex::new(r"^rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$").unwrap();
-    static ref RGBA_REGEX: Regex = Regex::new(r"^rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([\d.]+)\s*\)$").unwrap();
-    static ref HSL_REGEX: Regex = Regex::new(r"^hsl\(\s*(\d+)\s*,\s*(\d+)%\s*,\s*(\d+)%\s*\)$").unwrap();
-    static ref HSLA_REGEX: Regex = Regex::new(r"^hsla\(\s*(\d+)\s*,\s*(\d+)%\s*,\s*(\d+)%\s*,\s*([\d.]+)\s*\)$").unwrap();
+    static ref HEX_REGEX: Regex =
+        Regex::new(r"^#([0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$").unwrap();
+    static ref RGB_REGEX: Regex =
+        Regex::new(r"^rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$").unwrap();
+    static ref RGBA_REGEX: Regex =
+        Regex::new(r"^rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([\d.]+)\s*\)$").unwrap();
+    static ref HSL_REGEX: Regex =
+        Regex::new(r"^hsl\(\s*(\d+)\s*,\s*(\d+)%\s*,\s*(\d+)%\s*\)$").unwrap();
+    static ref HSLA_REGEX: Regex =
+        Regex::new(r"^hsla\(\s*(\d+)\s*,\s*(\d+)%\s*,\s*(\d+)%\s*,\s*([\d.]+)\s*\)$").unwrap();
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -35,68 +40,76 @@ pub fn convert_color(input: &str) -> Result<ColorConversion, String> {
     }
     if let Some(caps) = RGB_REGEX.captures(trimmed) {
         return parse_rgb(
-            caps[1].parse().unwrap(),
-            caps[2].parse().unwrap(),
-            caps[3].parse().unwrap(),
+            parse_num(&caps[1], "red")?,
+            parse_num(&caps[2], "green")?,
+            parse_num(&caps[3], "blue")?,
             None,
         );
     }
     if let Some(caps) = RGBA_REGEX.captures(trimmed) {
         return parse_rgb(
-            caps[1].parse().unwrap(),
-            caps[2].parse().unwrap(),
-            caps[3].parse().unwrap(),
-            Some(caps[4].parse().unwrap()),
+            parse_num(&caps[1], "red")?,
+            parse_num(&caps[2], "green")?,
+            parse_num(&caps[3], "blue")?,
+            Some(parse_num(&caps[4], "alpha")?),
         );
     }
     if let Some(caps) = HSL_REGEX.captures(trimmed) {
         return parse_hsl(
-            caps[1].parse().unwrap(),
-            caps[2].parse().unwrap(),
-            caps[3].parse().unwrap(),
+            parse_num(&caps[1], "hue")?,
+            parse_num(&caps[2], "saturation")?,
+            parse_num(&caps[3], "lightness")?,
             None,
         );
     }
     if let Some(caps) = HSLA_REGEX.captures(trimmed) {
         return parse_hsl(
-            caps[1].parse().unwrap(),
-            caps[2].parse().unwrap(),
-            caps[3].parse().unwrap(),
-            Some(caps[4].parse().unwrap()),
+            parse_num(&caps[1], "hue")?,
+            parse_num(&caps[2], "saturation")?,
+            parse_num(&caps[3], "lightness")?,
+            Some(parse_num(&caps[4], "alpha")?),
         );
     }
 
     Err("Invalid color format".to_string())
 }
 
+/// Parse a regex-captured component without panicking: out-of-range input
+/// like `rgb(999, 0, 0)` is a user error, not a crash.
+fn parse_num<T: std::str::FromStr>(s: &str, what: &str) -> Result<T, String> {
+    s.parse().map_err(|_| format!("Invalid {what} value: {s}"))
+}
+
+fn parse_hex_digit(s: &str) -> Result<u8, String> {
+    u8::from_str_radix(s, 16).map_err(|_| format!("Invalid hex digit: {s}"))
+}
+
 fn parse_hex(hex: &str) -> Result<ColorConversion, String> {
     let (r, g, b, a) = match hex.len() {
-        3 => {
-            let r = u8::from_str_radix(&hex[0..1].repeat(2), 16).unwrap();
-            let g = u8::from_str_radix(&hex[1..2].repeat(2), 16).unwrap();
-            let b = u8::from_str_radix(&hex[2..3].repeat(2), 16).unwrap();
-            (r, g, b, 255)
-        }
-        4 => {
-            let r = u8::from_str_radix(&hex[0..1].repeat(2), 16).unwrap();
-            let g = u8::from_str_radix(&hex[1..2].repeat(2), 16).unwrap();
-            let b = u8::from_str_radix(&hex[2..3].repeat(2), 16).unwrap();
-            let a = u8::from_str_radix(&hex[3..4].repeat(2), 16).unwrap();
-            (r, g, b, a)
-        }
-        6 => {
-            let r = u8::from_str_radix(&hex[0..2], 16).unwrap();
-            let g = u8::from_str_radix(&hex[2..4], 16).unwrap();
-            let b = u8::from_str_radix(&hex[4..6], 16).unwrap();
-            (r, g, b, 255)
-        }
-        8 => {
-            let r = u8::from_str_radix(&hex[0..2], 16).unwrap();
-            let g = u8::from_str_radix(&hex[2..4], 16).unwrap();
-            let b = u8::from_str_radix(&hex[4..6], 16).unwrap();
-            let a = u8::from_str_radix(&hex[6..8], 16).unwrap();
-            (r, g, b, a)
-        }
+        3 => (
+            parse_hex_digit(&hex[0..1].repeat(2))?,
+            parse_hex_digit(&hex[1..2].repeat(2))?,
+            parse_hex_digit(&hex[2..3].repeat(2))?,
+            255,
+        ),
+        4 => (
+            parse_hex_digit(&hex[0..1].repeat(2))?,
+            parse_hex_digit(&hex[1..2].repeat(2))?,
+            parse_hex_digit(&hex[2..3].repeat(2))?,
+            parse_hex_digit(&hex[3..4].repeat(2))?,
+        ),
+        6 => (
+            parse_hex_digit(&hex[0..2])?,
+            parse_hex_digit(&hex[2..4])?,
+            parse_hex_digit(&hex[4..6])?,
+            255,
+        ),
+        8 => (
+            parse_hex_digit(&hex[0..2])?,
+            parse_hex_digit(&hex[2..4])?,
+            parse_hex_digit(&hex[4..6])?,
+            parse_hex_digit(&hex[6..8])?,
+        ),
         _ => return Err("Invalid hex length".to_string()),
     };
     build_conversion(r, g, b, a)
@@ -169,20 +182,6 @@ fn build_conversion(r: u8, g: u8, b: u8, a: u8) -> Result<ColorConversion, Strin
     Ok(ColorConversion { hex, rgb, hsl, css })
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn converts_hex_and_detects_formats() {
-        assert!(detect_color("#0ea5e9"));
-        assert!(!detect_color("not a color"));
-        let conv = convert_color("#ff0000").expect("valid hex");
-        assert_eq!(conv.hex, "#FF0000");
-        assert_eq!(conv.rgb, "rgb(255, 0, 0)");
-    }
-}
-
 fn rgb_to_hsl(r: u8, g: u8, b: u8) -> (u16, u8, u8) {
     let r = r as f32 / 255.0;
     let g = g as f32 / 255.0;
@@ -214,5 +213,29 @@ fn rgb_to_hsl(r: u8, g: u8, b: u8) -> (u16, u8, u8) {
 
     let h = if h < 0.0 { h + 360.0 } else { h };
 
-    (h.round() as u16, (s * 100.0).round() as u8, (l * 100.0).round() as u8)
+    (
+        h.round() as u16,
+        (s * 100.0).round() as u8,
+        (l * 100.0).round() as u8,
+    )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn converts_hex_and_detects_formats() {
+        assert!(detect_color("#0ea5e9"));
+        assert!(!detect_color("not a color"));
+        let conv = convert_color("#ff0000").expect("valid hex");
+        assert_eq!(conv.hex, "#FF0000");
+        assert_eq!(conv.rgb, "rgb(255, 0, 0)");
+    }
+
+    #[test]
+    fn out_of_range_values_are_errors_not_panics() {
+        assert!(convert_color("rgb(999, 0, 0)").is_err());
+        assert!(convert_color("hsl(0, 0%, 0%)").is_ok());
+    }
 }

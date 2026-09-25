@@ -1,9 +1,9 @@
+#[cfg(target_os = "linux")]
+pub mod linux;
 #[cfg(target_os = "macos")]
 pub mod macos;
 #[cfg(target_os = "windows")]
 pub mod windows;
-#[cfg(target_os = "linux")]
-pub mod linux;
 
 use crate::storage::repository::update_ocr_text;
 
@@ -66,10 +66,13 @@ async fn recognize_image(image_path: &str) -> Result<String, String> {
 fn normalize_ocr_language(raw: &str) -> String {
     let lower = raw.trim().to_lowercase();
     // Already a Tesseract code? Keep it (supports "eng+spa" combos too).
-    if lower.chars().all(|c| c == '+' || c == '_' || c.is_ascii_lowercase()) && !lower.is_empty() {
+    if lower
+        .chars()
+        .all(|c| c == '+' || c == '_' || c.is_ascii_lowercase())
+        && !lower.is_empty()
+    {
         const KNOWN: &[&str] = &[
-            "eng", "spa", "fra", "deu", "por", "ita", "rus", "chi_sim", "chi_tra", "jpn",
-            "kor",
+            "eng", "spa", "fra", "deu", "por", "ita", "rus", "chi_sim", "chi_tra", "jpn", "kor",
         ];
         let first = lower.split('+').next().unwrap_or("");
         if KNOWN.contains(&first) || lower.contains('+') {

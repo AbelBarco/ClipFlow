@@ -1,8 +1,8 @@
-type Theme = 'light' | 'dark' | 'system';
+type Theme = "light" | "dark" | "system";
 
 class ThemeStore {
-  theme: Theme = $state('system');
-  resolvedTheme: 'light' | 'dark' = $state('light');
+  theme: Theme = $state("system");
+  resolvedTheme: "light" | "dark" = $state("light");
   private initialized = false;
 
   constructor() {
@@ -10,13 +10,13 @@ class ThemeStore {
   }
 
   init(): void {
-    if (this.initialized || typeof window === 'undefined') {
+    if (this.initialized || typeof window === "undefined") {
       return;
     }
     this.initialized = true;
     try {
-      const stored = localStorage.getItem('theme') as Theme | null;
-      if (stored === 'light' || stored === 'dark' || stored === 'system') {
+      const stored = localStorage.getItem("theme") as Theme | null;
+      if (stored === "light" || stored === "dark" || stored === "system") {
         this.theme = stored;
       }
     } catch {
@@ -30,7 +30,7 @@ class ThemeStore {
   setTheme(theme: Theme): void {
     this.theme = theme;
     try {
-      localStorage.setItem('theme', theme);
+      localStorage.setItem("theme", theme);
     } catch {
       // Ignore storage errors.
     }
@@ -39,25 +39,26 @@ class ThemeStore {
   }
 
   private updateResolvedTheme(): void {
-    if (typeof window === 'undefined') {
+    if (typeof window === "undefined") {
       return;
     }
-    if (this.theme === 'system') {
-      this.resolvedTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
-        ? 'dark'
-        : 'light';
+    if (this.theme === "system") {
+      this.resolvedTheme = window.matchMedia("(prefers-color-scheme: dark)")
+        .matches
+        ? "dark"
+        : "light";
     } else {
       this.resolvedTheme = this.theme;
     }
   }
 
   private watchSystemTheme(): void {
-    if (typeof window === 'undefined') {
+    if (typeof window === "undefined") {
       return;
     }
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    mediaQuery.addEventListener('change', () => {
-      if (this.theme === 'system') {
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    mediaQuery.addEventListener("change", () => {
+      if (this.theme === "system") {
         this.updateResolvedTheme();
         this.applyTheme();
       }
@@ -65,14 +66,14 @@ class ThemeStore {
   }
 
   private applyTheme(): void {
-    if (typeof document === 'undefined') {
+    if (typeof document === "undefined") {
       return;
     }
     const root = document.documentElement;
-    if (this.resolvedTheme === 'dark') {
-      root.classList.add('dark');
+    if (this.resolvedTheme === "dark") {
+      root.classList.add("dark");
     } else {
-      root.classList.remove('dark');
+      root.classList.remove("dark");
     }
   }
 }

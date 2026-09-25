@@ -1,4 +1,4 @@
-export type ClipType = 'text' | 'url' | 'code' | 'color' | 'image';
+export type ClipType = "text" | "url" | "code" | "color" | "image";
 
 export interface ClipItem {
   id: string;

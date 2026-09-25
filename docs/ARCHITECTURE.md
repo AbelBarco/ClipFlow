@@ -64,7 +64,9 @@ ClipFlow follows a layered architecture with clear separation between frontend (
 ### Backend (Rust)
 
 #### Command Layer (`src/commands/`)
+
 Thin wrappers that:
+
 - Receive invoke calls from frontend
 - Validate input
 - Delegate to pipeline/storage/system modules
@@ -72,19 +74,23 @@ Thin wrappers that:
 - No business logic
 
 #### Pipeline (`src/pipeline/`)
+
 Pure Rust, no Tauri dependencies:
+
 - **Detector**: Classifies clipboard content (text/url/color/code/image)
 - **Dedupe**: Content hashing for duplicate detection
 - **Color Parser**: Parse/convert HEX, RGB, HSL formats
 - **Transformers**: Text transformations (case, encoding, formatting)
 
 #### Storage (`src/storage/`)
+
 - **Database**: SQLite via `tauri-plugin-sql` with migrations
 - **Repository**: CRUD operations for clipboard items
 - **Rotation**: FIFO logic to maintain max 500 items
 - **Image Store**: Filesystem storage for images
 
 #### System Integration
+
 - **Clipboard Watcher**: 300ms polling with platform-specific APIs
 - **Clipboard Writer**: Multi-MIME clipboard writing
 - **Exclusion**: Detect password managers and concealed input
@@ -96,6 +102,7 @@ Pure Rust, no Tauri dependencies:
 ## Data Flow
 
 ### Clipboard Capture
+
 ```
 OS Clipboard → Watcher (300ms poll) → Detect Type → Hash Content
                                     ↓
@@ -107,6 +114,7 @@ OS Clipboard → Watcher (300ms poll) → Detect Type → Hash Content
 ```
 
 ### Spotlight Search
+
 ```
 User Input → Fuse.js Fuzzy Search → Filtered Results → Render List
                                     ↓
@@ -116,6 +124,7 @@ User Input → Fuse.js Fuzzy Search → Filtered Results → Render List
 ```
 
 ### Color Detection
+
 ```
 Clipboard Text → Color Detector → Parse Format → Convert All Formats
                                     ↓

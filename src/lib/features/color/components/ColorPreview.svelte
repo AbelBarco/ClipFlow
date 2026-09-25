@@ -20,5 +20,5 @@
   role="img"
   aria-label={`Color preview: ${color}`}
 >
-  <div class="absolute inset-0 bg-[conic-gradient(from_90deg_at_50%_50%,transparent_50%,white_50%),conic-gradient(from_-90deg_at_50%_50%,transparent_50%,black_50%)] bg-[length:8px_8px]" />
+  <div class="absolute inset-0 bg-[conic-gradient(from_90deg_at_50%_50%,transparent_50%,white_50%),conic-gradient(from_-90deg_at_50%_50%,transparent_50%,black_50%)] bg-[length:8px_8px]"></div>
 </div>

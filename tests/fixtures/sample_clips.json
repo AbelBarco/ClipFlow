@@ -1,7 +1,19 @@
 [
-  {"type": "text", "content": "Hello, world!", "preview": "Hello, world!"},
-  {"type": "url", "content": "https://github.com/user/repo", "preview": "https://github.com/user/repo"},
-  {"type": "code", "content": "function hello() {\n  console.log('Hello');\n}", "preview": "function hello() {\n  console.log('Hello');\n}"},
-  {"type": "color", "content": "#FF5733", "preview": "#FF5733"},
-  {"type": "text", "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.", "preview": "Lorem ipsum dolor sit amet..."}
+  { "type": "text", "content": "Hello, world!", "preview": "Hello, world!" },
+  {
+    "type": "url",
+    "content": "https://github.com/user/repo",
+    "preview": "https://github.com/user/repo"
+  },
+  {
+    "type": "code",
+    "content": "function hello() {\n  console.log('Hello');\n}",
+    "preview": "function hello() {\n  console.log('Hello');\n}"
+  },
+  { "type": "color", "content": "#FF5733", "preview": "#FF5733" },
+  {
+    "type": "text",
+    "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    "preview": "Lorem ipsum dolor sit amet..."
+  }
 ]

@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 permissions:
   contents: write
@@ -43,8 +43,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'pnpm'
+          node-version: "20"
+          cache: "pnpm"
 
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
@@ -102,7 +102,7 @@ jobs:
   publish:
     name: Publish to Stores
     needs: release
-    if: false  # Set to true when ready to publish to stores
+    if: false # Set to true when ready to publish to stores
     runs-on: ubuntu-latest
     steps:
       - name: Publish to Microsoft Store

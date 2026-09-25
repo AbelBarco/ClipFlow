@@ -14,7 +14,9 @@ pub fn apply_transform(text: &str, transformer: &str) -> Result<String, String> 
         "json_pretty" => pretty_json(text),
         "json_minify" => minify_json(text),
         "url_encode" => Ok(urlencoding::encode(text).to_string()),
-        "url_decode" => urlencoding::decode(text).map(|s| s.to_string()).map_err(|e| e.to_string()),
+        "url_decode" => urlencoding::decode(text)
+            .map(|s| s.to_string())
+            .map_err(|e| e.to_string()),
         "base64_encode" => {
             use base64::Engine as _;
             Ok(base64::engine::general_purpose::STANDARD.encode(text))
@@ -70,7 +72,12 @@ fn to_snake_case(text: &str) -> String {
 
     for (i, c) in text.chars().enumerate() {
         if c.is_uppercase() {
-            if i > 0 && (prev_was_lower || (prev_was_upper && i + 1 < text.len() && text.chars().nth(i + 1).map_or(false, |n| n.is_lowercase()))) {
+            if i > 0
+                && (prev_was_lower
+                    || (prev_was_upper
+                        && i + 1 < text.len()
+                        && text.chars().nth(i + 1).is_some_and(|n| n.is_lowercase())))
+            {
                 result.push('_');
             }
             result.push(c.to_lowercase().next().unwrap());
@@ -151,7 +158,10 @@ mod tests {
     #[test]
     fn transforms_text() {
         assert_eq!(apply_transform("hola", "uppercase").unwrap(), "HOLA");
-        assert_eq!(apply_transform("Hola Mundo", "snake_case").unwrap(), "hola_mundo");
+        assert_eq!(
+            apply_transform("Hola Mundo", "snake_case").unwrap(),
+            "hola_mundo"
+        );
         assert!(apply_transform("x", "no_existe").is_err());
         assert_eq!(list_transformers().len(), 15);
     }

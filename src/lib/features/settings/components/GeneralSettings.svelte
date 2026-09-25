@@ -53,11 +53,12 @@
   </legend>
 
   <div>
-    <label class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">
+    <label for="global-shortcut" class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">
       {localeStore.t('generalShortcut')}
     </label>
     <div class="flex items-center gap-2">
       <input
+        id="global-shortcut"
         type="text"
         bind:value={shortcutInput}
         class="input font-mono text-center"
@@ -81,10 +82,11 @@
   </div>
 
   <div>
-    <label class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">
+    <label for="max-history" class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">
       {localeStore.t('generalMaxHistory')}
     </label>
     <input
+      id="max-history"
       type="number"
       bind:value={settingsStore.settings.general.maxHistoryItems}
       min="50"
@@ -100,12 +102,13 @@
 
   <div class="flex items-center justify-between">
     <div>
-      <label class="text-sm font-medium text-surface-700 dark:text-surface-300">
+      <label for="launch-startup" class="text-sm font-medium text-surface-700 dark:text-surface-300">
         {localeStore.t('generalLaunch')}
       </label>
       <p class="text-xs text-surface-500 dark:text-surface-400">{localeStore.t('generalLaunchHint')}</p>
     </div>
     <input
+      id="launch-startup"
       type="checkbox"
       bind:checked={settingsStore.settings.general.launchAtStartup}
       class="w-5 h-5 rounded border-surface-300 text-primary-600 focus:ring-primary-500"
@@ -115,12 +118,13 @@
 
   <div class="flex items-center justify-between">
     <div>
-      <label class="text-sm font-medium text-surface-700 dark:text-surface-300">
+      <label for="show-notif" class="text-sm font-medium text-surface-700 dark:text-surface-300">
         {localeStore.t('generalNotif')}
       </label>
       <p class="text-xs text-surface-500 dark:text-surface-400">{localeStore.t('generalNotifHint')}</p>
     </div>
     <input
+      id="show-notif"
       type="checkbox"
       bind:checked={settingsStore.settings.general.showNotifications}
       class="w-5 h-5 rounded border-surface-300 text-primary-600 focus:ring-primary-500"
@@ -129,10 +133,11 @@
   </div>
 
   <div>
-    <label class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">
+    <label for="theme-select" class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">
       {localeStore.t('generalTheme')}
     </label>
     <select
+      id="theme-select"
       value={settingsStore.settings.general.theme}
       class="input w-[180px]"
       onchange={handleThemeChange}

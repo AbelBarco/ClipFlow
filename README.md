@@ -13,7 +13,10 @@ ClipFlow saves everything you copy (text, code, images, colors) and lets you ret
 - 🎨 **Color Detection** - Auto-detects HEX/RGB/HSL with live preview
 - 🔍 **OCR** - Extract text from images (Vision/WinRT/Tesseract)
 - 🔧 **Transformers** - Case conversion, encoding, formatting, slugify
-- 🛡️ **Privacy First** - Excludes password managers, respects concealed types
+- 🌐 **10 Languages** - Full UI translation (ES, EN, FR, DE, PT, IT, ZH, JA, KO, RU)
+- ✍️ **Native Spell Checker** - Offline correction in every language, with auto-fix
+- 🛡️ **Privacy First** - Per-app exclusion via focused-window detection, secret heuristics with opt-out notice
+- 🔒 **Optional Encryption** - XChaCha20-Poly1305 at rest, key in OS keychain
 - 🔎 **Fuzzy Search** - Instant filtering with Fuse.js
 - 🌙 **Theme** - Light/Dark/System automatic
 - 📦 **Tiny** - <15 MB binary, <40 MB RAM
@@ -49,12 +52,12 @@ pnpm tauri build
 
 Pre-built binaries available on [Releases](https://github.com/clipflow/clipflow/releases).
 
-| Platform | Download |
-|----------|----------|
-| Windows (x64) | `clipflow-windows-x86_64.msi` |
-| macOS (Intel) | `clipflow-macos-x86_64.dmg` |
-| macOS (Apple Silicon) | `clipflow-macos-arm64.dmg` |
-| Linux (x64) | `clipflow-linux-x86_64.AppImage` |
+| Platform              | Download                         |
+| --------------------- | -------------------------------- |
+| Windows (x64)         | `clipflow-windows-x86_64.msi`    |
+| macOS (Intel)         | `clipflow-macos-x86_64.dmg`      |
+| macOS (Apple Silicon) | `clipflow-macos-arm64.dmg`       |
+| Linux (x64)           | `clipflow-linux-x86_64.AppImage` |
 
 ## Usage
 
@@ -67,63 +70,69 @@ Pre-built binaries available on [Releases](https://github.com/clipflow/clipflow/
 
 ### Keyboard Shortcuts
 
-| Shortcut | Action |
-|----------|--------|
+| Shortcut       | Action                   |
+| -------------- | ------------------------ |
 | `Ctrl+Shift+V` | Open Spotlight (default) |
-| `↑/↓` | Navigate results |
-| `Enter` | Paste selected |
-| `Esc` | Close Spotlight |
-| `/` | Focus search |
-| `Ctrl+Shift+U` | Uppercase transform |
-| `Ctrl+Shift+L` | Lowercase transform |
+| `↑/↓`          | Navigate results         |
+| `Enter`        | Paste selected           |
+| `Esc`          | Close Spotlight          |
+| `/`            | Focus search             |
+| `Ctrl+Shift+U` | Uppercase transform      |
+| `Ctrl+Shift+L` | Lowercase transform      |
 
 ## Transformers
 
 Available via context menu or shortcuts:
 
-| Transform | Description |
-|-----------|-------------|
-| UPPERCASE | Convert to uppercase |
-| lowercase | Convert to lowercase |
-| Title Case | Capitalize each word |
-| snake_case | Convert to snake_case |
-| kebab-case | Convert to kebab-case |
-| camelCase | Convert to camelCase |
-| PascalCase | Convert to PascalCase |
-| Trim | Remove whitespace |
-| Slugify | URL-friendly slug |
-| JSON Pretty | Format JSON |
-| JSON Minify | Minify JSON |
-| URL Encode | Encode for URLs |
-| URL Decode | Decode from URLs |
-| Base64 Encode | Encode to Base64 |
-| Base64 Decode | Decode from Base64 |
+| Transform     | Description           |
+| ------------- | --------------------- |
+| UPPERCASE     | Convert to uppercase  |
+| lowercase     | Convert to lowercase  |
+| Title Case    | Capitalize each word  |
+| snake_case    | Convert to snake_case |
+| kebab-case    | Convert to kebab-case |
+| camelCase     | Convert to camelCase  |
+| PascalCase    | Convert to PascalCase |
+| Trim          | Remove whitespace     |
+| Slugify       | URL-friendly slug     |
+| JSON Pretty   | Format JSON           |
+| JSON Minify   | Minify JSON           |
+| URL Encode    | Encode for URLs       |
+| URL Decode    | Decode from URLs      |
+| Base64 Encode | Encode to Base64      |
+| Base64 Decode | Decode from Base64    |
 
 ## Settings
 
 Access via tray menu → Settings:
 
 - **General**: Global shortcut, history limit, startup, notifications, theme
-- **Exclusions**: Apps/types to ignore (password managers auto-excluded)
+- **Language**: Interface language for the whole app (applied instantly)
+- **Exclusions**: Focused-app ignore list (password managers excluded by default), secret-heuristic sensitivity, skip notice
+- **Privacy**: Optional at-rest encryption (OS-keychain key)
 - **OCR**: Enable/disable, language, auto-run on images
+- **Corrector**: Native offline spell checker, per-language, with auto-fix
 
 ## Development
 
 ### Platform Dependencies
 
 **Linux (Ubuntu/Debian)**
+
 ```bash
 sudo apt install libwebkit2gtk-4.1-dev libayatana-appindicator3-dev \
   librsvg2-dev libssl-dev libsqlite3-dev tesseract-ocr libtesseract-dev
 ```
 
 **macOS**
+
 ```bash
 xcode-select --install
 brew install tesseract
 ```
 
 **Windows**
+
 - Visual Studio 2022 with C++ workload
 - WebView2 Runtime (included in Windows 11)
 
@@ -184,6 +193,7 @@ pnpm tauri build            # Current platform
 See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed architecture documentation.
 
 Key principles:
+
 - **Layered**: Frontend ↔ Commands ↔ Pipeline/Storage/System
 - **Pure Pipeline**: Detection, dedupe, transform are pure Rust
 - **Capability-based**: Minimal permissions per window

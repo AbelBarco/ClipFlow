@@ -19,12 +19,13 @@
 
   <div class="flex items-center justify-between">
     <div>
-      <label class="text-sm font-medium text-surface-700 dark:text-surface-300">
+      <label for="ocr-enabled" class="text-sm font-medium text-surface-700 dark:text-surface-300">
         {localeStore.t('ocrEnable')}
       </label>
       <p class="text-xs text-surface-500 dark:text-surface-400">{localeStore.t('ocrEnableHint')}</p>
     </div>
     <input
+      id="ocr-enabled"
       type="checkbox"
       bind:checked={settingsStore.settings.ocr.enabled}
       class="w-5 h-5 rounded border-surface-300 text-primary-600 focus:ring-primary-500"
@@ -34,10 +35,11 @@
 
   {#if settingsStore.settings.ocr.enabled}
     <div>
-      <label class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">
+      <label for="ocr-language" class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">
         {localeStore.t('ocrLanguage')}
       </label>
       <select
+        id="ocr-language"
         bind:value={settingsStore.settings.ocr.language}
         class="input w-[200px]"
         onchange={() => settingsStore.updateOcr({ language: settingsStore.settings.ocr.language })}
@@ -50,12 +52,13 @@
 
     <div class="flex items-center justify-between">
       <div>
-        <label class="text-sm font-medium text-surface-700 dark:text-surface-300">
+        <label for="ocr-autorun" class="text-sm font-medium text-surface-700 dark:text-surface-300">
           {localeStore.t('ocrAutoRun')}
         </label>
         <p class="text-xs text-surface-500 dark:text-surface-400">{localeStore.t('ocrAutoRunHint')}</p>
       </div>
       <input
+        id="ocr-autorun"
         type="checkbox"
         bind:checked={settingsStore.settings.ocr.autoRun}
         class="w-5 h-5 rounded border-surface-300 text-primary-600 focus:ring-primary-500"

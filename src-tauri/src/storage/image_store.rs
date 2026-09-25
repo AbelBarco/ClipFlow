@@ -46,10 +46,7 @@ pub async fn load_data_url(path: &str) -> Result<String, String> {
     Ok(format!(
         "data:{};base64,{}",
         mime,
-        base64::engine::Engine::encode(
-            &base64::engine::general_purpose::STANDARD,
-            &bytes
-        )
+        base64::engine::Engine::encode(&base64::engine::general_purpose::STANDARD, &bytes)
     ))
 }
 
@@ -90,7 +87,9 @@ pub async fn load_image(path: &str) -> Result<Vec<u8>, String> {
 
 pub async fn delete_image(path: &str) -> Result<(), String> {
     if std::path::Path::new(path).exists() {
-        tokio::fs::remove_file(path).await.map_err(|e| e.to_string())?;
+        tokio::fs::remove_file(path)
+            .await
+            .map_err(|e| e.to_string())?;
     }
     Ok(())
 }

@@ -1,5 +1,5 @@
-use regex::Regex;
 use lazy_static::lazy_static;
+use regex::Regex;
 
 lazy_static! {
     static ref URL_REGEX: Regex = Regex::new(r"^https?://[^\s/$.?#].[^\s]*$").unwrap();
@@ -51,6 +51,36 @@ fn is_color(content: &str) -> bool {
         || HSLA_REGEX.is_match(content)
 }
 
+fn is_code(content: &str) -> bool {
+    // Heuristic: check for common code patterns
+    let lines: Vec<&str> = content.lines().collect();
+    if lines.len() > 1 {
+        let indicator_count = lines
+            .iter()
+            .filter(|line| CODE_INDICATORS.is_match(line))
+            .count();
+        if indicator_count > 0 {
+            return true;
+        }
+    }
+
+    // Check for common code characters
+    let code_chars = content
+        .chars()
+        .filter(|c| {
+            matches!(
+                c,
+                '{' | '}' | '[' | ']' | '(' | ')' | ';' | ':' | '=' | '<' | '>'
+            )
+        })
+        .count();
+    if code_chars > content.len() / 20 {
+        return true;
+    }
+
+    false
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -62,25 +92,4 @@ mod tests {
         assert_eq!(detect_type("https://example.com", None), "url");
         assert_eq!(detect_type("hello world", None), "text");
     }
-}
-
-fn is_code(content: &str) -> bool {
-    // Heuristic: check for common code patterns
-    let lines: Vec<&str> = content.lines().collect();
-    if lines.len() > 1 {
-        let indicator_count = lines.iter()
-            .filter(|line| CODE_INDICATORS.is_match(line))
-            .count();
-        if indicator_count > 0 {
-            return true;
-        }
-    }
-
-    // Check for common code characters
-    let code_chars = content.chars().filter(|c| matches!(c, '{' | '}' | '[' | ']' | '(' | ')' | ';' | ':' | '=' | '<' | '>')).count();
-    if code_chars > content.len() / 20 {
-        return true;
-    }
-
-    false
 }

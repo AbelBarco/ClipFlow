@@ -1,7 +1,7 @@
-type ColorFormat = 'hex' | 'rgb' | 'hsl' | 'css';
+type ColorFormat = "hex" | "rgb" | "hsl" | "css";
 
 class ColorStore {
-  activeFormat: ColorFormat = $state('hex');
+  activeFormat: ColorFormat = $state("hex");
   recentColors: string[] = $state([]);
 
   setFormat(format: ColorFormat): void {
@@ -9,7 +9,10 @@ class ColorStore {
   }
 
   addRecentColor(color: string): void {
-    this.recentColors = [color, ...this.recentColors.filter(c => c !== color)].slice(0, 20);
+    this.recentColors = [
+      color,
+      ...this.recentColors.filter((c) => c !== color),
+    ].slice(0, 20);
   }
 
   getFormattedColor(color: string): string {

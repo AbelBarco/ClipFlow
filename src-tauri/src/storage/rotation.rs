@@ -1,4 +1,4 @@
-use crate::storage::repository::{get_all_clips, delete_clip};
+use crate::storage::repository::{delete_clip, get_all_clips};
 
 pub async fn rotate_if_needed(max_items: usize) -> Result<(), String> {
     let clips = get_all_clips().await?;

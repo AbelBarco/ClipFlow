@@ -11,6 +11,16 @@ pub struct AppConfig {
     /// Native offline spell/grammar corrector preferences.
     #[serde(default)]
     pub corrector: CorrectorSettings,
+    /// At-rest protection preferences.
+    #[serde(default)]
+    pub security: SecuritySettings,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", default)]
+pub struct SecuritySettings {
+    /// Encrypt `content`/`ocr_text` in SQLite with an OS-keychain key.
+    pub encryption_enabled: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -32,6 +42,20 @@ pub struct ExclusionSettings {
     pub excluded_apps: Vec<String>,
     pub excluded_types: Vec<String>,
     pub respect_concealed: bool,
+    /// Secret-heuristic sensitivity: "conservative" (default) or "standard".
+    #[serde(default = "default_heuristic_level")]
+    pub heuristic_level: String,
+    /// Show an OS notification when an item is dropped as a possible secret.
+    #[serde(default = "default_true")]
+    pub notify_on_exclude: bool,
+}
+
+fn default_heuristic_level() -> String {
+    "conservative".to_string()
+}
+
+fn default_true() -> bool {
+    true
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -91,6 +115,8 @@ impl Default for AppConfig {
                 ],
                 excluded_types: vec!["password".to_string(), "concealed".to_string()],
                 respect_concealed: true,
+                heuristic_level: default_heuristic_level(),
+                notify_on_exclude: true,
             },
             ocr: OcrSettings {
                 enabled: true,
@@ -98,6 +124,7 @@ impl Default for AppConfig {
                 auto_run: false,
             },
             corrector: CorrectorSettings::default(),
+            security: SecuritySettings::default(),
         }
     }
 }

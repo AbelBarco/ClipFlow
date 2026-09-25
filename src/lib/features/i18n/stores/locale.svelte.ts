@@ -5,10 +5,10 @@ import {
   resolveLocale,
   translations,
   type LocaleCode,
-  type TranslationKey
-} from '../translations';
+  type TranslationKey,
+} from "../translations";
 
-const STORAGE_KEY = 'clipflow-locale';
+const STORAGE_KEY = "clipflow-locale";
 
 class LocaleStore {
   /** Idioma activo de la interfaz. Cambiarlo re-renderiza toda la app. */
@@ -31,7 +31,7 @@ class LocaleStore {
         const stored = localStorage.getItem(STORAGE_KEY);
         if (stored && isLocale(stored)) {
           next = stored;
-        } else if (typeof navigator !== 'undefined' && navigator.language) {
+        } else if (typeof navigator !== "undefined" && navigator.language) {
           next = resolveLocale(navigator.language, DEFAULT_LOCALE);
         }
       } catch {
@@ -68,7 +68,7 @@ class LocaleStore {
   }
 
   private applyHtmlLang(): void {
-    if (typeof document === 'undefined') return;
+    if (typeof document === "undefined") return;
     document.documentElement.lang = htmlLangOf(this.locale);
   }
 }

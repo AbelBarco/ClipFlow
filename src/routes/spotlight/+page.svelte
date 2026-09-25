@@ -95,7 +95,12 @@
 </script>
 
 <div class="flex flex-col h-full min-h-[320px] w-full max-w-[600px] mx-auto p-4">
-  <div class="flex items-center gap-2 mb-2">
+  <div
+    class="flex items-center gap-2 mb-2 select-none cursor-move"
+    data-tauri-drag-region
+    title={localeStore.t('spotDrag')}
+  >
+    <span class="text-surface-300 dark:text-surface-600 text-xs leading-none" aria-hidden="true">⋮⋮</span>
     <img src="/logo.png" alt="ClipFlow" class="w-6 h-6 rounded-md" />
     <span class="text-sm font-bold text-surface-900 dark:text-surface-50">ClipFlow</span>
     <span class="text-[11px] text-surface-400 ml-auto">{localeStore.t('spotHint')}</span>

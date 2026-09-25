@@ -1,7 +1,32 @@
 [
-  {"input": "#FF0000", "expected_hex": "#FF0000", "expected_rgb": "rgb(255, 0, 0)", "expected_hsl": "hsl(0, 100%, 50%)"},
-  {"input": "#00FF00", "expected_hex": "#00FF00", "expected_rgb": "rgb(0, 255, 0)", "expected_hsl": "hsl(120, 100%, 50%)"},
-  {"input": "#0000FF", "expected_hex": "#0000FF", "expected_rgb": "rgb(0, 0, 255)", "expected_hsl": "hsl(240, 100%, 50%)"},
-  {"input": "rgb(255, 128, 0)", "expected_hex": "#FF8000", "expected_rgb": "rgb(255, 128, 0)", "expected_hsl": "hsl(30, 100%, 50%)"},
-  {"input": "hsl(180, 50%, 50%)", "expected_hex": "#40BFBF", "expected_rgb": "rgb(64, 191, 191)", "expected_hsl": "hsl(180, 50%, 50%)"}
+  {
+    "input": "#FF0000",
+    "expected_hex": "#FF0000",
+    "expected_rgb": "rgb(255, 0, 0)",
+    "expected_hsl": "hsl(0, 100%, 50%)"
+  },
+  {
+    "input": "#00FF00",
+    "expected_hex": "#00FF00",
+    "expected_rgb": "rgb(0, 255, 0)",
+    "expected_hsl": "hsl(120, 100%, 50%)"
+  },
+  {
+    "input": "#0000FF",
+    "expected_hex": "#0000FF",
+    "expected_rgb": "rgb(0, 0, 255)",
+    "expected_hsl": "hsl(240, 100%, 50%)"
+  },
+  {
+    "input": "rgb(255, 128, 0)",
+    "expected_hex": "#FF8000",
+    "expected_rgb": "rgb(255, 128, 0)",
+    "expected_hsl": "hsl(30, 100%, 50%)"
+  },
+  {
+    "input": "hsl(180, 50%, 50%)",
+    "expected_hex": "#40BFBF",
+    "expected_rgb": "rgb(64, 191, 191)",
+    "expected_hsl": "hsl(180, 50%, 50%)"
+  }
 ]

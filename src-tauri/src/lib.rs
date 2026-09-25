@@ -1,10 +1,10 @@
+pub mod clipboard;
 pub mod commands;
 pub mod config;
-pub mod clipboard;
-pub mod storage;
-pub mod pipeline;
-pub mod ocr;
 pub mod hotkeys;
+pub mod ocr;
+pub mod pipeline;
+pub mod storage;
 pub mod tray;
 pub mod windows;
 
@@ -51,6 +51,7 @@ pub fn run() {
             commands::clipboard_commands::clipboard_paste_item,
             commands::clipboard_commands::clipboard_copy_to_clipboard,
             commands::clipboard_commands::clipboard_get_image,
+            commands::clipboard_commands::clipboard_get_item,
             commands::color_commands::color_convert,
             commands::color_commands::color_detect,
             commands::transform_commands::transform_apply,
@@ -63,6 +64,8 @@ pub fn run() {
             commands::settings_commands::get_config,
             commands::settings_commands::set_config,
             commands::settings_commands::reset_config,
+            commands::security_commands::security_set_encryption,
+            commands::security_commands::security_status,
         ])
         .setup(|app| {
             let handle = app.handle().clone();

@@ -3,6 +3,7 @@
   import GeneralSettings from '$lib/features/settings/components/GeneralSettings.svelte';
   import LanguageSettings from '$lib/features/settings/components/LanguageSettings.svelte';
   import ExclusionSettings from '$lib/features/settings/components/ExclusionSettings.svelte';
+  import PrivacySettings from '$lib/features/settings/components/PrivacySettings.svelte';
   import OcrSettings from '$lib/features/settings/components/OcrSettings.svelte';
   import CorrectorSettings from '$lib/features/settings/components/CorrectorSettings.svelte';
   import { settingsStore } from '$lib/features/settings/stores/settings.svelte';
@@ -59,6 +60,7 @@
     <GeneralSettings />
     <LanguageSettings />
     <ExclusionSettings />
+    <PrivacySettings />
     <OcrSettings />
     <CorrectorSettings />
   </div>

@@ -36,4 +36,11 @@ anyhow = "1.0"
 thiserror = "1.0"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+# Foreground-window detection for per-app exclusion (Windows/macOS/X11,
+# best-effort on Wayland).
+active-win-pos-rs = "0.11"
+# OS keychain (DPAPI / Keychain / libsecret) for the DB encryption key.
+keyring = "3"
+# XChaCha20-Poly1305 for optional encryption at rest (pure Rust).
+chacha20poly1305 = "0.10"
 

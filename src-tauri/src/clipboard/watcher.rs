@@ -1,12 +1,13 @@
+use crate::clipboard::exclusion::{decide, ExclusionDecision};
+use crate::clipboard::notify::notify_secret_excluded;
 use crate::pipeline::{process_clipboard_content, process_image_content};
 use crate::storage::repository::{add_clip, ClipItem};
-use crate::clipboard::exclusion::should_exclude;
-use tauri::{AppHandle, Emitter};
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use std::time::Duration;
+use tauri::{AppHandle, Emitter};
 use tokio::time::interval;
-use tracing::{info, debug, error};
+use tracing::{debug, error, info};
 
 /// Max image pixels to store (avoid freezing on giant bitmaps).
 const MAX_IMAGE_PIXELS: usize = 24_000_000;
@@ -33,12 +34,23 @@ pub async fn start_watcher(app: AppHandle) -> Result<(), String> {
                         let hash = crate::pipeline::dedupe::content_hash(&content);
                         if last_text_hash.as_ref() != Some(&hash) {
                             last_text_hash = Some(hash.clone());
-                            if should_exclude(&content).await {
-                                debug!("Excluded clipboard content from history");
-                            } else {
-                                let item =
-                                    process_clipboard_content(content.as_bytes(), None);
-                                emit_clip(&app, ClipItem::from(item)).await;
+                            match decide(&content).await {
+                                ExclusionDecision::Keep => {
+                                    let item = process_clipboard_content(content.as_bytes(), None);
+                                    emit_clip(&app, ClipItem::from(item)).await;
+                                }
+                                ExclusionDecision::ExcludedApp { matched_entry } => {
+                                    // Deliberately no notification: the user
+                                    // asked for silence from this app.
+                                    // (Never log the content itself.)
+                                    debug!("Excluded clipboard content from app '{matched_entry}'");
+                                }
+                                ExclusionDecision::ConcealedHeuristic { reason } => {
+                                    debug!("Excluded possible secret ({reason}) from history");
+                                    // …but DO tell the user something was
+                                    // dropped, so copies never "vanish".
+                                    notify_secret_excluded(&app).await;
+                                }
                             }
                         }
                     }
@@ -49,7 +61,7 @@ pub async fn start_watcher(app: AppHandle) -> Result<(), String> {
             }
 
             // --- Images (screenshots, copied photos) — sampled, not every tick ---
-            if tick % IMAGE_EVERY_N_TICKS == 0 {
+            if tick.is_multiple_of(IMAGE_EVERY_N_TICKS) {
                 match get_clipboard_image().await {
                     Ok((width, height, rgba)) => {
                         if width > 0 && height > 0 && width * height <= MAX_IMAGE_PIXELS {
@@ -63,9 +75,8 @@ pub async fn start_watcher(app: AppHandle) -> Result<(), String> {
                                 .await
                                 {
                                     Ok(path) => {
-                                        let item = process_image_content(
-                                            path, width, height, byte_len,
-                                        );
+                                        let item =
+                                            process_image_content(path, width, height, byte_len);
                                         emit_clip(&app, ClipItem::from(item)).await;
                                     }
                                     Err(e) => error!("Failed to save clipboard image: {}", e),
@@ -86,9 +97,12 @@ pub async fn start_watcher(app: AppHandle) -> Result<(), String> {
 
 async fn emit_clip(app: &AppHandle, clip_item: ClipItem) {
     match add_clip(clip_item.clone()).await {
-        Ok(()) => {
-            info!("Added new clipboard item: {} ({})", clip_item.id, clip_item.r#type);
-            if let Err(e) = app.emit("clipboard-item-added", &clip_item) {
+        Ok(outcome) => {
+            // On a re-copy the stored row keeps its id with a fresh
+            // timestamp; the frontend upserts by id so it jumps to top.
+            let item = outcome.item;
+            info!("Added new clipboard item: {} ({})", item.id, item.r#type);
+            if let Err(e) = app.emit("clipboard-item-added", &item) {
                 error!("Failed to emit clipboard event: {}", e);
             }
         }

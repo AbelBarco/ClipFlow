@@ -1,7 +1,8 @@
+pub mod crypto;
 pub mod db;
+pub mod image_store;
 pub mod repository;
 pub mod rotation;
-pub mod image_store;
 
 use crate::storage::db::init_db;
 

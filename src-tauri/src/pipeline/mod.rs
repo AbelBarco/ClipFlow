@@ -1,6 +1,6 @@
-pub mod detector;
-pub mod dedupe;
 pub mod color_parser;
+pub mod dedupe;
+pub mod detector;
 pub mod transformers;
 
 use crate::pipeline::detector::detect_type;
@@ -23,7 +23,12 @@ pub fn process_clipboard_content(content: &[u8], mime_type: Option<&str>) -> Cli
 }
 
 /// Build a history item for a captured image stored at `path`.
-pub fn process_image_content(path: String, width: usize, height: usize, byte_len: usize) -> ClipItem {
+pub fn process_image_content(
+    path: String,
+    width: usize,
+    height: usize,
+    byte_len: usize,
+) -> ClipItem {
     ClipItem {
         id: uuid::Uuid::new_v4().to_string(),
         r#type: "image".to_string(),

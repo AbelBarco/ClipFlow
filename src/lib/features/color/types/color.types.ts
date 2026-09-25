@@ -1,4 +1,4 @@
-export type ColorFormat = 'hex' | 'rgb' | 'hsl' | 'css';
+export type ColorFormat = "hex" | "rgb" | "hsl" | "css";
 
 export interface ColorValue {
   r: number;

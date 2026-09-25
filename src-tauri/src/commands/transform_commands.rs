@@ -1,4 +1,6 @@
-use crate::pipeline::transformers::{apply_transform as apply_impl, list_transformers as list_impl};
+use crate::pipeline::transformers::{
+    apply_transform as apply_impl, list_transformers as list_impl,
+};
 
 #[tauri::command]
 pub async fn transform_apply(text: String, transformer: String) -> Result<String, String> {

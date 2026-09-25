@@ -1,7 +1,7 @@
+use once_cell::sync::Lazy;
 use rusqlite::{Connection, OpenFlags};
 use std::sync::Mutex;
 use tauri::Manager;
-use once_cell::sync::Lazy;
 
 static DB: Lazy<Mutex<Option<Connection>>> = Lazy::new(|| Mutex::new(None));
 
@@ -12,8 +12,11 @@ pub async fn init_db(app: &tauri::AppHandle) -> Result<(), String> {
     let db_path = app_dir.join("clipflow.db");
     let conn = Connection::open_with_flags(
         &db_path,
-        OpenFlags::SQLITE_OPEN_READ_WRITE | OpenFlags::SQLITE_OPEN_CREATE | OpenFlags::SQLITE_OPEN_URI,
-    ).map_err(|e| e.to_string())?;
+        OpenFlags::SQLITE_OPEN_READ_WRITE
+            | OpenFlags::SQLITE_OPEN_CREATE
+            | OpenFlags::SQLITE_OPEN_URI,
+    )
+    .map_err(|e| e.to_string())?;
 
     // Enable WAL mode for better concurrency
     conn.execute_batch("PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL;")

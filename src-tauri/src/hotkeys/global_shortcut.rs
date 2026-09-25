@@ -4,7 +4,8 @@ use tracing::info;
 
 pub fn register_global_shortcut(app: &AppHandle) -> Result<(), String> {
     // Try to read the configured shortcut, fall back to default.
-    let shortcut = std::env::var("CLIPFLOW_SHORTCUT").unwrap_or_else(|_| "Ctrl+Shift+V".to_string());
+    let shortcut =
+        std::env::var("CLIPFLOW_SHORTCUT").unwrap_or_else(|_| "Ctrl+Shift+V".to_string());
 
     register_shortcut(app, &shortcut)
 }

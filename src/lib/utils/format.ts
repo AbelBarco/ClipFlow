@@ -6,11 +6,11 @@ export function formatRelativeTime(timestamp: number): string {
   const hours = Math.floor(diff / 3600000);
   const days = Math.floor(diff / 86400000);
 
-  if (minutes < 1) return 'Just now';
+  if (minutes < 1) return "Just now";
   if (minutes < 60) return `${minutes}m ago`;
   if (hours < 24) return `${hours}h ago`;
   if (days < 7) return `${days}d ago`;
-  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
 export function formatSize(bytes: number): string {
@@ -21,7 +21,7 @@ export function formatSize(bytes: number): string {
 
 export function truncate(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text;
-  return text.slice(0, maxLength - 1) + '…';
+  return text.slice(0, maxLength - 1) + "…";
 }
 
 export function generateId(): string {

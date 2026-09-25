@@ -19,8 +19,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'pnpm'
+          node-version: "20"
+          cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -28,11 +28,11 @@ jobs:
       - name: Run ESLint
         run: pnpm lint
 
-      - name: Run Prettier
-        run: pnpm format --check
+      - name: Check Prettier formatting
+        run: pnpm exec prettier --check .
 
       - name: Run TypeScript check
-        run: pnpm svelte-check
+        run: pnpm check
 
   test-rust:
     name: Test Rust
@@ -44,6 +44,11 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy, rustfmt
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev libssl-dev libsqlite3-dev
 
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
@@ -60,10 +65,6 @@ jobs:
         working-directory: ./src-tauri
         run: cargo fmt --all -- --check
 
-      - name: Run tests
-        working-directory: ./src-tauri
-        run: cargo test --all
-
   test-frontend:
     name: Test Frontend
     runs-on: ubuntu-latest
@@ -73,8 +74,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'pnpm'
+          node-version: "20"
+          cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -102,9 +103,12 @@ jobs:
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
 
-      - name: Run integration tests
+      # Unit + in-module integration tests (exclusion, crypto,
+      # duplicate-refresh, pipeline). Keychain-backed paths are opt-in
+      # and never run here; crypto is covered with injected test keys.
+      - name: Run Rust test suite
         working-directory: ./src-tauri
-        run: cargo test --test integration
+        run: cargo test --all
 
   build:
     name: Build All Platforms
@@ -137,8 +141,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'pnpm'
+          node-version: "20"
+          cache: "pnpm"
 
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2

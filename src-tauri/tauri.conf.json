@@ -76,7 +76,12 @@
   "bundle": {
     "active": true,
     "targets": "all",
-    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.ico"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.ico"
+    ],
     "category": "DeveloperTool",
     "shortDescription": "Lightweight cross-platform clipboard manager",
     "longDescription": "ClipFlow is a lightweight, cross-platform clipboard manager that lives in your system tray.",
@@ -91,7 +96,12 @@
     },
     "linux": {
       "deb": {
-        "depends": ["libwebkit2gtk-4.1-0", "libayatana-appindicator3-1", "librsvg2-common", "tesseract-ocr"]
+        "depends": [
+          "libwebkit2gtk-4.1-0",
+          "libayatana-appindicator3-1",
+          "librsvg2-common",
+          "tesseract-ocr"
+        ]
       },
       "appimage": {
         "bundleMediaFramework": true

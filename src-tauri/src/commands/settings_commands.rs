@@ -1,4 +1,6 @@
-use crate::config::app_config::{get_config as get_impl, set_config as set_impl, reset_config as reset_impl, AppConfig};
+use crate::config::app_config::{
+    get_config as get_impl, reset_config as reset_impl, set_config as set_impl, AppConfig,
+};
 
 #[tauri::command]
 pub async fn settings_get() -> Result<AppConfig, String> {

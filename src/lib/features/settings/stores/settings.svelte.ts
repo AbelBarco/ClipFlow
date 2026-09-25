@@ -1,6 +1,13 @@
-import { invoke } from '@tauri-apps/api/core';
-import type { AppSettings, GeneralSettings, ExclusionSettings, OcrSettings, CorrectorSettings } from '../types/settings.types';
-import { DEFAULT_SETTINGS } from '../types/settings.types';
+import { invoke } from "@tauri-apps/api/core";
+import type {
+  AppSettings,
+  GeneralSettings,
+  ExclusionSettings,
+  OcrSettings,
+  CorrectorSettings,
+  SecuritySettings,
+} from "../types/settings.types";
+import { DEFAULT_SETTINGS } from "../types/settings.types";
 
 class SettingsStore {
   settings: AppSettings = $state({ ...DEFAULT_SETTINGS });
@@ -10,20 +17,27 @@ class SettingsStore {
   async load(): Promise<void> {
     this.isLoading = true;
     try {
-      const loaded = await invoke<AppSettings>('settings_get');
+      const loaded = await invoke<AppSettings>("settings_get");
       // Merge section by section so configs saved by older versions
       // (without `language` or `corrector`) keep working.
       this.settings = {
         ...DEFAULT_SETTINGS,
         ...loaded,
         general: { ...DEFAULT_SETTINGS.general, ...(loaded.general ?? {}) },
-        exclusions: { ...DEFAULT_SETTINGS.exclusions, ...(loaded.exclusions ?? {}) },
+        exclusions: {
+          ...DEFAULT_SETTINGS.exclusions,
+          ...(loaded.exclusions ?? {}),
+        },
         ocr: { ...DEFAULT_SETTINGS.ocr, ...(loaded.ocr ?? {}) },
-        corrector: { ...DEFAULT_SETTINGS.corrector, ...(loaded.corrector ?? {}) }
+        corrector: {
+          ...DEFAULT_SETTINGS.corrector,
+          ...(loaded.corrector ?? {}),
+        },
+        security: { ...DEFAULT_SETTINGS.security, ...(loaded.security ?? {}) },
       };
       this.hasChanges = false;
     } catch (error) {
-      console.error('Failed to load settings:', error);
+      console.error("Failed to load settings:", error);
       this.settings = { ...DEFAULT_SETTINGS };
     } finally {
       this.isLoading = false;
@@ -32,17 +46,17 @@ class SettingsStore {
 
   async save(): Promise<void> {
     try {
-      await invoke('settings_set', { config: this.settings });
+      await invoke("settings_set", { config: this.settings });
       this.hasChanges = false;
     } catch (error) {
-      console.error('Failed to save settings:', error);
+      console.error("Failed to save settings:", error);
       throw error;
     }
   }
 
   async resetToDefaults(): Promise<void> {
     try {
-      const defaults = await invoke<AppSettings>('settings_reset');
+      const defaults = await invoke<AppSettings>("settings_reset");
       this.settings = defaults;
     } catch {
       this.settings = { ...DEFAULT_SETTINGS };
@@ -75,17 +89,24 @@ class SettingsStore {
     this.hasChanges = true;
   }
 
+  updateSecurity(security: Partial<SecuritySettings>): void {
+    this.settings.security = { ...this.settings.security, ...security };
+    this.hasChanges = true;
+  }
+
   addExcludedApp(app: string): void {
     if (!this.settings.exclusions.excludedApps.includes(app)) {
-      this.settings.exclusions.excludedApps = [...this.settings.exclusions.excludedApps, app];
+      this.settings.exclusions.excludedApps = [
+        ...this.settings.exclusions.excludedApps,
+        app,
+      ];
       this.hasChanges = true;
     }
   }
 
   removeExcludedApp(app: string): void {
-    this.settings.exclusions.excludedApps = this.settings.exclusions.excludedApps.filter(
-      (a) => a !== app
-    );
+    this.settings.exclusions.excludedApps =
+      this.settings.exclusions.excludedApps.filter((a) => a !== app);
     this.hasChanges = true;
   }
 }

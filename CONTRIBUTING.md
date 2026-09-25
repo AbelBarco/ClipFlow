@@ -35,11 +35,13 @@ chore: update dependencies
 ### Code Style
 
 **Frontend (TypeScript/Svelte)**
+
 - Run `pnpm lint` and `pnpm format` before committing
 - Use `svelte-check` for type checking
 - Follow existing patterns in `src/lib/features/`
 
 **Backend (Rust)**
+
 - Run `cargo fmt` and `cargo clippy` before committing
 - No `unwrap()`/`expect()` on external input
 - Use `anyhow::Result` for errors
@@ -48,12 +50,14 @@ chore: update dependencies
 ### Testing
 
 **Frontend**
+
 ```bash
 pnpm test              # Unit tests
 pnpm test:ui           # With UI
 ```
 
 **Backend**
+
 ```bash
 cd src-tauri
 cargo test             # All tests
@@ -61,6 +65,7 @@ cargo test --test integration  # Integration tests only
 ```
 
 **Full Test Suite**
+
 ```bash
 # In CI: runs on every PR
 pnpm lint && pnpm format --check && pnpm svelte-check
@@ -79,6 +84,7 @@ cd src-tauri && cargo check && cargo clippy && cargo test
 ## Reporting Issues
 
 Use GitHub Issues with:
+
 - Clear title and description
 - Steps to reproduce
 - Expected vs actual behavior

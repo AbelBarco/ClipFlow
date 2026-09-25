@@ -2,6 +2,7 @@ use std::path::Path;
 
 pub struct WindowsOcrProvider;
 
+#[allow(clippy::new_without_default)]
 impl WindowsOcrProvider {
     pub fn new() -> Self {
         Self

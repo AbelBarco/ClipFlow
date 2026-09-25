@@ -2,6 +2,7 @@ use std::path::Path;
 
 pub struct MacOcrProvider;
 
+#[allow(clippy::new_without_default)]
 impl MacOcrProvider {
     pub fn new() -> Self {
         Self

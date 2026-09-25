@@ -100,12 +100,13 @@
 
   <div class="flex items-center justify-between">
     <div>
-      <label class="text-sm font-medium text-surface-700 dark:text-surface-300">
+      <label for="corr-enabled" class="text-sm font-medium text-surface-700 dark:text-surface-300">
         {localeStore.t('corrEnable')}
       </label>
       <p class="text-xs text-surface-500 dark:text-surface-400">{localeStore.t('corrEnableHint')}</p>
     </div>
     <input
+      id="corr-enabled"
       type="checkbox"
       bind:checked={settingsStore.settings.corrector.enabled}
       class="w-5 h-5 rounded border-surface-300 text-primary-600 focus:ring-primary-500"
@@ -140,12 +141,13 @@
 
   <div class="flex items-center justify-between">
     <div>
-      <label class="text-sm font-medium text-surface-700 dark:text-surface-300">
+      <label for="corr-auto" class="text-sm font-medium text-surface-700 dark:text-surface-300">
         {localeStore.t('corrAuto')}
       </label>
       <p class="text-xs text-surface-500 dark:text-surface-400">{localeStore.t('corrAutoHint')}</p>
     </div>
     <input
+      id="corr-auto"
       type="checkbox"
       bind:checked={settingsStore.settings.corrector.autoCorrect}
       disabled={!settingsStore.settings.corrector.enabled}
