@@ -1725,8 +1725,11 @@ export function resolveLocale(
   return map[lower] ?? map[base] ?? fallback;
 }
 
-export function isLocale(code: string): code is LocaleCode {
-  return (SUPPORTED_LOCALES as readonly string[]).includes(code);
+export function isLocale(code: unknown): code is LocaleCode {
+  return (
+    typeof code === "string" &&
+    (SUPPORTED_LOCALES as readonly string[]).includes(code)
+  );
 }
 
 export function htmlLangOf(code: LocaleCode): string {

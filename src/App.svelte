@@ -6,12 +6,16 @@
   import { themeStore } from "$lib/features/ui/stores/theme.svelte";
   import { localeStore } from "$lib/features/i18n/stores/locale.svelte";
   import { settingsStore } from "$lib/features/settings/stores/settings.svelte";
+  import { DEFAULT_LOCALE, isLocale } from "$lib/features/i18n/translations";
 
   let windowLabel: string = $state("main");
   let ready: boolean = $state(false);
 
   onMount(async () => {
     // Apply persisted theme/language as early as possible (fast local path).
+    // Se registra si había elección explícita ANTES de init(), porque init()
+    // también la consume como fallback válido.
+    const hadStoredLocale = localeStore.hasStoredLocale();
     themeStore.init();
     localeStore.init();
 
@@ -21,6 +25,15 @@
     try {
       await settingsStore.load();
       themeStore.applyRemoteTheme(settingsStore.settings.general.theme);
+      // ...y para el idioma, con un matiz: si no hay elección guardada en
+      // local y el backend trae el valor por defecto de fábrica, se respeta
+      // la detección del navegador en vez de imponer español.
+      const savedLanguage = settingsStore.settings.general.language;
+      if (isLocale(savedLanguage)) {
+        if (hadStoredLocale || savedLanguage !== DEFAULT_LOCALE) {
+          localeStore.applyRemoteLocale(savedLanguage);
+        }
+      }
     } catch {
       // Backend unreachable (browser dev) — keep the local value.
     }
@@ -31,6 +44,11 @@
       const { listen } = await import("@tauri-apps/api/event");
       await listen<{ theme: string }>("theme-changed", (event) => {
         themeStore.applyRemoteTheme(event.payload?.theme);
+      });
+      // Lo mismo para el idioma: cambiarlo en ajustes re-renderiza
+      // principal y spotlight al instante, sin reiniciar.
+      await listen<{ locale: string }>("locale-changed", (event) => {
+        localeStore.applyRemoteLocale(event.payload?.locale);
       });
     } catch {
       // Not running inside Tauri — nothing to sync.

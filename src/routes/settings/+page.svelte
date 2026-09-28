@@ -9,21 +9,19 @@
   import { settingsStore } from '$lib/features/settings/stores/settings.svelte';
   import { localeStore } from '$lib/features/i18n/stores/locale.svelte';
   import { themeStore } from '$lib/features/ui/stores/theme.svelte';
-  import { DEFAULT_LOCALE } from '$lib/features/i18n/translations';
+  import { DEFAULT_LOCALE, isLocale } from '$lib/features/i18n/translations';
 
   onMount(() => {
+    const hadStoredLocale = localeStore.hasStoredLocale();
     void settingsStore.load().then(() => {
       // Silent apply: App.svelte already synced + listens for changes.
       // Broadcasting here would just echo back to every window.
       themeStore.applyRemoteTheme(settingsStore.settings.general.theme);
-      // El idioma guardado en el backend manda; si es el valor por defecto
-      // de una instalación nueva, se respeta la detección local
-      // (localStorage > idioma del navegador).
+      // Misma regla que en App.svelte: el backend manda salvo que sea el
+      // valor de fábrica sin elección previa (se respeta el navegador).
       const saved = settingsStore.settings.general.language;
-      if (saved && saved !== DEFAULT_LOCALE) {
-        localeStore.setLocale(saved);
-      } else {
-        localeStore.init();
+      if (isLocale(saved) && (hadStoredLocale || saved !== DEFAULT_LOCALE)) {
+        localeStore.applyRemoteLocale(saved);
       }
     });
   });

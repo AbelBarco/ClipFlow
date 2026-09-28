@@ -44,6 +44,29 @@ class LocaleStore {
 
   /** Cambia el idioma al instante y lo recuerda para la próxima sesión. */
   setLocale(code: string): LocaleCode {
+    const next = this.applyLocalLocale(code);
+    void this.broadcast(next);
+    return next;
+  }
+
+  /**
+   * Idioma que llega del backend o de otra ventana: se aplica y recuerda
+   * localmente, pero NO se re-emite (evita bucles de eco).
+   */
+  applyRemoteLocale(raw: unknown): LocaleCode {
+    return this.applyLocalLocale(typeof raw === "string" ? raw : "");
+  }
+
+  /** ¿Hay una elección explícita guardada de una sesión anterior? */
+  hasStoredLocale(): boolean {
+    try {
+      return isLocale(localStorage.getItem(STORAGE_KEY));
+    } catch {
+      return false;
+    }
+  }
+
+  private applyLocalLocale(code: string): LocaleCode {
     const next = isLocale(code) ? code : DEFAULT_LOCALE;
     this.locale = next;
     try {
@@ -53,6 +76,15 @@ class LocaleStore {
     }
     this.applyHtmlLang();
     return next;
+  }
+
+  private async broadcast(locale: LocaleCode): Promise<void> {
+    try {
+      const { emit } = await import("@tauri-apps/api/event");
+      await emit("locale-changed", { locale });
+    } catch {
+      // Fuera de Tauri (navegador en dev) — no hay nada que sincronizar.
+    }
   }
 
   /** Traduce una clave e interpola `{vars}`. Con reactividad de Svelte 5. */
@@ -70,6 +102,8 @@ class LocaleStore {
   private applyHtmlLang(): void {
     if (typeof document === "undefined") return;
     document.documentElement.lang = htmlLangOf(this.locale);
+    // Marca universal (sin subtítulo en un idioma concreto).
+    document.title = "ClipFlow";
   }
 }
 
