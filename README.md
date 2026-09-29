@@ -113,6 +113,11 @@ Access via tray menu → Settings:
 - **OCR**: Enable/disable, language, auto-run on images
 - **Corrector**: Native offline spell checker, per-language, with auto-fix
 
+> **OCR notes (still fully offline):** on Windows it uses the built-in
+> `Windows.Media.Ocr` engine — if recognition fails for a language, install
+> its OCR pack in Settings → Time & Language → Language. On Linux it uses
+> the `tesseract` CLI with the language selected in settings.
+
 ## Development
 
 ### Platform Dependencies

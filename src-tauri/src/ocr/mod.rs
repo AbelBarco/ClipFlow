@@ -61,6 +61,27 @@ async fn recognize_image(image_path: &str) -> Result<String, String> {
     }
 }
 
+/// Maps a (possibly combined, e.g. "eng+spa") Tesseract language code to the
+/// primary BCP-47 tag used by native OS engines (WinRT `Windows.Media.Ocr`).
+/// Unknown codes fall back to English; callers should then try the engine's
+/// user-profile/default language before giving up.
+pub(crate) fn tesseract_to_bcp47(code: &str) -> &'static str {
+    match code.trim().to_lowercase().split('+').next().unwrap_or("") {
+        "spa" | "es" => "es",
+        "fra" | "fr" => "fr",
+        "deu" | "de" => "de",
+        "por" | "pt" => "pt",
+        "ita" | "it" => "it",
+        "rus" | "ru" => "ru",
+        "chi_sim" | "zh" => "zh-Hans",
+        "chi_tra" => "zh-Hant",
+        "jpn" | "ja" => "ja",
+        "kor" | "ko" => "ko",
+        "eng" | "en" => "en",
+        _ => "en",
+    }
+}
+
 /// Accepts both Tesseract codes (eng, spa, …) and UI locale codes
 /// (en, es, …) and normalizes them to a Tesseract language code.
 fn normalize_ocr_language(raw: &str) -> String {
@@ -92,5 +113,39 @@ fn normalize_ocr_language(raw: &str) -> String {
         "ko" => "kor".to_string(),
         other if !other.is_empty() => other.to_string(),
         _ => "eng".to_string(),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn maps_tesseract_codes_to_bcp47() {
+        assert_eq!(tesseract_to_bcp47("eng"), "en");
+        assert_eq!(tesseract_to_bcp47("spa"), "es");
+        assert_eq!(tesseract_to_bcp47("fra"), "fr");
+        assert_eq!(tesseract_to_bcp47("deu"), "de");
+        assert_eq!(tesseract_to_bcp47("por"), "pt");
+        assert_eq!(tesseract_to_bcp47("ita"), "it");
+        assert_eq!(tesseract_to_bcp47("rus"), "ru");
+        assert_eq!(tesseract_to_bcp47("chi_sim"), "zh-Hans");
+        assert_eq!(tesseract_to_bcp47("chi_tra"), "zh-Hant");
+        assert_eq!(tesseract_to_bcp47("jpn"), "ja");
+        assert_eq!(tesseract_to_bcp47("kor"), "ko");
+        // Combos resolve to the primary language…
+        assert_eq!(tesseract_to_bcp47("eng+spa"), "en");
+        // …UI locale codes pass through, unknowns fall back to English.
+        assert_eq!(tesseract_to_bcp47("es"), "es");
+        assert_eq!(tesseract_to_bcp47("klingon"), "en");
+        assert_eq!(tesseract_to_bcp47(""), "en");
+    }
+
+    #[test]
+    fn normalizes_ui_locales_to_tesseract() {
+        assert_eq!(normalize_ocr_language("es"), "spa");
+        assert_eq!(normalize_ocr_language("eng"), "eng");
+        assert_eq!(normalize_ocr_language("eng+spa"), "eng+spa");
+        assert_eq!(normalize_ocr_language(""), "eng");
     }
 }

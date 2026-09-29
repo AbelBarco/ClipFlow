@@ -8,7 +8,7 @@
 - [x] Spotlight window is draggable and remembers its position
 - [x] Type detection (text/url/code/color/image)
 - [x] Color preview and conversion
-- [x] OCR (native APIs)
+- [x] OCR (native on-device APIs: WinRT on Windows, Tesseract on Linux)
 - [x] Plain text paste
 - [x] Transformers (case, encoding, formatting)
 - [x] Per-app exclusion via focused-window detection (Win/macOS/X11, Hyprland/KWin)
@@ -71,7 +71,7 @@
 - [ ] **Browser extension**: Direct clipboard access from web
 - [ ] **Mobile companion**: iOS/Android app for cross-device sync
 - [ ] **Clipboard history timeline**: Visual timeline view
-- [ ] **OCR improvements**: Table detection, handwriting, multi-language
+- [ ] **OCR improvements**: Table detection, handwriting, multi-language, macOS Vision backend
 - [ ] **Code intelligence**: Syntax highlighting, language detection, formatting
 - [ ] **Workflow automation**: Trigger scripts/workflows on patterns
 

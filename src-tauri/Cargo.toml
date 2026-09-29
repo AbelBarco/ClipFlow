@@ -44,3 +44,9 @@ keyring = "3"
 # XChaCha20-Poly1305 for optional encryption at rest (pure Rust).
 chacha20poly1305 = "0.10"
 
+# Native Windows APIs (WinRT OCR + GDI for the OCR test). Windows-only so
+# Linux/macOS builds stay lean. Still 100% offline: Windows.Media.Ocr runs
+# fully on-device (needs the OS OCR language pack, see README).
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.52", features = ["Foundation", "Foundation_Collections", "Globalization", "Graphics_Imaging", "Media_Ocr", "Storage", "Storage_Streams", "Win32_Foundation", "Win32_Graphics_Gdi", "Win32_System_Com"] }
+
