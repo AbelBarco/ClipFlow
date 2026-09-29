@@ -62,13 +62,7 @@
         "center": true
       }
     ],
-    "trayIcon": {
-      "id": "main",
-      "tooltip": "ClipFlow",
-      "iconPath": "icons/32x32.png",
-      "iconAsTemplate": true,
-      "menuOnLeftClick": true
-    },
+    "trayIcon": null,
     "security": {
       "csp": null
     }

@@ -113,6 +113,20 @@ pub fn show_main_window(app: &AppHandle) -> Result<(), String> {
     Ok(())
 }
 
+/// Left-click on the tray icon: reopen the app if hidden, hide it if open.
+pub fn toggle_main_window(app: &AppHandle) -> Result<(), String> {
+    if let Some(window) = app.get_webview_window("main") {
+        let visible = window.is_visible().unwrap_or(false);
+        if visible {
+            window.hide().map_err(|e| e.to_string())?;
+        } else {
+            window.show().map_err(|e| e.to_string())?;
+            window.set_focus().map_err(|e| e.to_string())?;
+        }
+    }
+    Ok(())
+}
+
 pub fn show_spotlight_window(app: &AppHandle) -> Result<(), String> {
     if let Some(window) = app.get_webview_window("spotlight") {
         window.show().map_err(|e| e.to_string())?;

@@ -41,7 +41,9 @@ pub fn setup(app: &AppHandle) -> Result<(), String> {
     let _tray = TrayIconBuilder::new()
         .icon(icon)
         .menu(&menu)
-        .show_menu_on_left_click(true)
+        // Right-click shows the menu; left-click toggles the main window
+        // (handled below). Never both on the same click.
+        .show_menu_on_left_click(false)
         .tooltip("ClipFlow")
         .on_menu_event(|app: &AppHandle, event| match event.id.as_ref() {
             "show_main" => {
@@ -70,8 +72,7 @@ pub fn setup(app: &AppHandle) -> Result<(), String> {
             } = event
             {
                 let app = tray.app_handle();
-                let _ = app.emit("show-spotlight", ());
-                crate::windows::show_spotlight_window(app).unwrap_or(());
+                crate::windows::toggle_main_window(app).unwrap_or(());
             }
         })
         .build(app)
