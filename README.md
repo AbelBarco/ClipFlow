@@ -1,6 +1,7 @@
 # ClipFlow
 
-> Lightweight, cross-platform clipboard manager that lives in your system tray.
+> [!NOTE]
+> 💻 **Current Compatibility:** Currently, ClipFlow is officially available for **Windows** (`.msi`) only. I am actively working on optimizing and testing the app to launch it on **macOS** and **Linux** very soon.
 
 ClipFlow saves everything you copy (text, code, images, colors) and lets you retrieve it instantly with a global shortcut. Built with Rust + Tauri 2 and Svelte 5.
 
