@@ -19,7 +19,7 @@ ClipFlow saves everything you copy (text, code, images, colors) and lets you ret
 - 🔒 **Optional Encryption** - XChaCha20-Poly1305 at rest, key in OS keychain
 - 🔎 **Fuzzy Search** - Instant filtering with Fuse.js
 - 🌙 **Theme** - Light/Dark/System automatic
-- 📦 **Tiny** - <15 MB binary, <40 MB RAM
+- 📦 **Tiny** - <30 MB binary, <250 MB RAM
 - 🖥️ **Cross-Platform** - Windows, macOS, Linux
 
 ## Quick Start
