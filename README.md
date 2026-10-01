@@ -14,7 +14,7 @@ ClipFlow saves everything you copy (text, code, images, colors) and lets you ret
 - 🔍 **OCR** - Extract text from images (Vision/WinRT/Tesseract)
 - 🔧 **Transformers** - Case conversion, encoding, formatting, slugify
 - 🌐 **10 Languages** - Full UI translation (ES, EN, FR, DE, PT, IT, ZH, JA, KO, RU)
-- ✍️ **Native Spell Checker** - Offline correction in every language, with auto-fix
+- ✍️ **Native Spell Checker** - Offline correction in every language, with auto-fix, 50k-word dictionaries and custom words
 - 🛡️ **Privacy First** - Per-app exclusion via focused-window detection, secret heuristics with opt-out notice
 - 🔒 **Optional Encryption** - XChaCha20-Poly1305 at rest, key in OS keychain
 - 🔎 **Fuzzy Search** - Instant filtering with Fuse.js
@@ -111,7 +111,7 @@ Access via tray menu → Settings:
 - **Exclusions**: Focused-app ignore list (password managers excluded by default), secret-heuristic sensitivity, skip notice
 - **Privacy**: Optional at-rest encryption (OS-keychain key)
 - **OCR**: Enable/disable, language, auto-run on images
-- **Corrector**: Native offline spell checker, per-language, with auto-fix
+- **Corrector**: Native offline spell checker, per-language, with auto-fix, dictionary suggestions and custom words
 
 > **OCR notes (still fully offline):** on Windows it uses the built-in
 > `Windows.Media.Ocr` engine — if recognition fails for a language, install

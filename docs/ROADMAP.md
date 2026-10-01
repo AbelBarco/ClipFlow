@@ -20,7 +20,7 @@
 - [x] Settings window
 - [x] Light/dark theme (system)
 - [x] Localization: full UI in 10 languages (ES, EN, FR, DE, PT, IT, ZH, JA, KO, RU)
-- [x] Native offline spell checker (all 10 languages, auto-fix)
+- [x] Native offline spell checker (rules in 10 languages, 50k-word FST dictionaries in 7, auto-fix, custom words)
 - [x] CI gate on every push/PR (eslint, prettier, svelte-check, clippy, fmt, tests)
 - [x] Cross-platform (Win/macOS/Linux)
 

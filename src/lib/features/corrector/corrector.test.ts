@@ -3,8 +3,13 @@ import {
   analyzeText,
   applyAllIssues,
   applyIssue,
+  applyIssuesWithCaret,
+  autoCorrectText,
   countChars,
   countWords,
+  DICT_LANGS,
+  mergeIssues,
+  TYPO_TABLES,
 } from "$lib/features/corrector/corrector";
 import {
   LANGUAGES,
@@ -96,6 +101,133 @@ describe("corrector engine", () => {
       (i) => i.type === "doublespace",
     )!;
     expect(applyIssue("hola  mundo", double)).toBe("hola mundo");
+  });
+
+  it("never destroys text on overlapping issues", () => {
+    // repeat [0..7] contiene dos typos: antes colapsaba a "teh".
+    const fixed = applyAllIssues("teh teh", analyzeText("teh teh", "en"));
+    expect(fixed).toBe("the the");
+    // Y la repetición restante se puede aplicar después, a mano.
+    const rep = analyzeText(fixed, "en").find((i) => i.type === "repeat")!;
+    expect(applyIssue(fixed, rep)).toBe("the");
+  });
+
+  it("keeps the caret stable through replacements", () => {
+    // "porfavor| ven" con cursor al final -> "por favor| " desplazado +1.
+    const r1 = applyIssuesWithCaret(
+      "porfavor ven",
+      analyzeText("porfavor ven", "es"),
+      11,
+    );
+    expect(r1.text).toBe("por favor ven");
+    expect(r1.caret).toBe(12);
+    // Cursor dentro de lo reemplazado -> queda al final del reemplazo.
+    const r2 = applyIssuesWithCaret(
+      "porfavor ven",
+      analyzeText("porfavor ven", "es"),
+      4,
+    );
+    expect(r2.text).toBe("por favor ven");
+    expect(r2.caret).toBe("por favor".length);
+    // Cursor delante de todo cambio -> no se mueve.
+    const r3 = applyIssuesWithCaret(
+      "hola  mundo",
+      analyzeText("hola  mundo", "es"),
+      0,
+    );
+    expect(r3.text).toBe("Hola mundo");
+    expect(r3.caret).toBe(0);
+  });
+
+  it("detects typos inside CJK/Korean words (no word boundaries)", () => {
+    expect(
+      analyzeText("安되요", "ko").some(
+        (i) => i.type === "typo" && i.suggestion === "돼요",
+      ),
+    ).toBe(true);
+    expect(
+      analyzeText("明天会下雨吗。在见", "zh").some(
+        (i) => i.type === "typo" && i.suggestion === "再见",
+      ),
+    ).toBe(true);
+    expect(
+      analyzeText("明日もこんにちわ", "ja").some(
+        (i) => i.type === "typo" && i.suggestion === "こんにちは",
+      ),
+    ).toBe(true);
+  });
+
+  it("auto-correct only applies safe fixes", () => {
+    // Typo al terminar la palabra (espacio final) -> se corrige.
+    const r1 = autoCorrectText("esto es una prueva ", "es", 19);
+    expect(r1.text).toBe("esto es una prueba ");
+    expect(r1.changed).toBe(true);
+    // Palabra en curso -> no se toca.
+    const r2 = autoCorrectText("esto es una prueva", "es", 18);
+    expect(r2.text).toBe("esto es una prueva");
+    expect(r2.changed).toBe(false);
+    // Ni repeat ni caps entran en automático.
+    const r3 = autoCorrectText("hola hola ", "es", 10);
+    expect(r3.text).toBe("hola hola ");
+    const r4 = autoCorrectText("hola. mundo ", "es", 12);
+    expect(r4.text).toBe("hola. mundo ");
+    // Pero espacios dobles y puntuación sí.
+    const r5 = autoCorrectText("hola  mundo ", "es", 12);
+    expect(r5.text).toBe("hola mundo ");
+  });
+
+  it("auto-correct respects manual-only entries", () => {
+    // "pero" (it) y estilo kanji/kana (ja) solo se sugieren, no se aplican.
+    const r1 = autoCorrectText("vorrei un pero ", "it", 14);
+    expect(r1.text).toBe("vorrei un pero ");
+    const r2 = autoCorrectText("事が出来る。", "ja", 6);
+    expect(r2.text).toBe("事が出来る。");
+    // …pero siguen apareciendo como sugerencias manuales.
+    expect(
+      analyzeText("vorrei un pero", "it").some(
+        (i) => i.type === "typo" && i.suggestion === "però",
+      ),
+    ).toBe(true);
+  });
+
+  it("mergeIssues prefers rules and keeps dict rows learnable", () => {
+    expect(DICT_LANGS).toEqual(["es", "en", "fr", "de", "pt", "it", "ru"]);
+    const rule = analyzeText("escreva porfavor aqui", "pt");
+    const merged = mergeIssues(rule, [
+      { index: 7, length: 8, word: "porfavor", suggestions: ["por favor"] },
+      { index: 16, length: 4, word: "aqui", suggestions: [] },
+    ]);
+    // El typo curado manda sobre el dict solapado; el otro dict sobrevive
+    // sin sugerencia (sirve para "aprender") y no borra al aplicar todo.
+    expect(merged.filter((i) => i.type === "dict")).toHaveLength(1);
+    expect(merged.some((i) => i.type === "typo")).toBe(true);
+    const dictRow = merged.find((i) => i.type === "dict")!;
+    expect(dictRow.original).toBe("aqui");
+    expect(dictRow.suggestion).toBe("");
+    expect(applyAllIssues("escreva porfavor aqui", merged)).toBe(
+      "Escreva por favor aqui",
+    );
+  });
+
+  it("typo tables have no identity, empty or duplicate entries", () => {
+    for (const [lang, pairs] of Object.entries(TYPO_TABLES)) {
+      const wrongs = new Set<string>();
+      expect(pairs.length, `${lang} table`).toBeGreaterThan(0);
+      for (const [wrong, right] of pairs) {
+        expect(wrong.trim().length, `${lang}:${wrong} empty`).toBeGreaterThan(
+          0,
+        );
+        expect(right.trim().length, `${lang}:${wrong} empty`).toBeGreaterThan(
+          0,
+        );
+        expect(wrong, `${lang}:${wrong} identical`).not.toBe(right);
+        expect(
+          wrongs.has(wrong.toLowerCase()),
+          `${lang}:${wrong} duplicated`,
+        ).toBe(false);
+        wrongs.add(wrong.toLowerCase());
+      }
+    }
   });
 
   it("counts words in CJK languages", () => {

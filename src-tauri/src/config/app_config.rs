@@ -75,6 +75,9 @@ pub struct CorrectorSettings {
     pub language: String,
     #[serde(default)]
     pub auto_correct: bool,
+    /// User-taught words ("add to dictionary"), always treated as known.
+    #[serde(default)]
+    pub custom_words: Vec<String>,
 }
 
 impl Default for CorrectorSettings {
@@ -83,6 +86,7 @@ impl Default for CorrectorSettings {
             enabled: true,
             language: "auto".to_string(),
             auto_correct: false,
+            custom_words: Vec::new(),
         }
     }
 }

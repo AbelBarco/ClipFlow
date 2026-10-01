@@ -1,20 +1,29 @@
 <script lang="ts">
+  import { tick } from 'svelte';
   import { LANGUAGES, htmlLangOf, resolveLocale } from '$lib/features/i18n/translations';
   import { localeStore } from '$lib/features/i18n/stores/locale.svelte';
   import { settingsStore } from '../stores/settings.svelte';
   import { copyToClipboard } from '$lib/features/clipboard/api/clipboard';
+  import { checkDictText, learnWord } from '../api/settings';
   import {
     analyzeText,
     applyAllIssues,
     applyIssue,
+    autoCorrectText,
     countChars,
     countWords,
-    type CorrectorIssue
+    DICT_LANGS,
+    mergeIssues,
+    type CorrectorIssue,
+    type DictMatch
   } from '$lib/features/corrector/corrector';
 
   let text = $state('');
+  let area: HTMLTextAreaElement | undefined = $state(undefined);
   let copiedFlash = $state(false);
   let copyTimer: ReturnType<typeof setTimeout> | undefined = $state(undefined);
+  let dictMatches = $state<DictMatch[]>([]);
+  let dictNonce = $state(0);
 
   // Idioma efectivo del corrector: el elegido o el de la interfaz ('auto').
   const effectiveLang = $derived(
@@ -24,8 +33,39 @@
   );
 
   const issues: CorrectorIssue[] = $derived(
-    settingsStore.settings.corrector.enabled ? analyzeText(text, effectiveLang) : []
+    settingsStore.settings.corrector.enabled
+      ? mergeIssues(analyzeText(text, effectiveLang), dictMatches)
+      : []
   );
+
+  // Subrayado por diccionario (estilo Word): con debounce para no acribillar
+  // al backend mientras se escribe; manual siempre, nunca automático.
+  $effect(() => {
+    const currentText = text;
+    const lang = effectiveLang;
+    const nonce = dictNonce;
+    const enabled = settingsStore.settings.corrector.enabled;
+    if (!enabled || !currentText.trim() || !DICT_LANGS.includes(lang)) {
+      dictMatches = [];
+      return;
+    }
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      void (async () => {
+        try {
+          const res = await checkDictText(currentText, lang);
+          // Solo vale la última petición (nonce) y si no hubo retecleo.
+          if (!cancelled && nonce === dictNonce) dictMatches = res;
+        } catch {
+          if (!cancelled && nonce === dictNonce) dictMatches = [];
+        }
+      })();
+    }, 400);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  });
 
   const words = $derived(countWords(text, effectiveLang));
   const chars = $derived(countChars(text));
@@ -44,29 +84,76 @@
         return localeStore.t('issueCaps');
       case 'typo':
         return localeStore.t('issueTypo');
+      case 'dict':
+        return localeStore.t('issueDict');
     }
   }
 
   function handleInput(e: Event) {
     const el = e.currentTarget as HTMLTextAreaElement;
-    let next = el.value;
-    // Autocorrección: aplica las correcciones seguras al escribir.
-    if (settingsStore.settings.corrector.enabled && settingsStore.settings.corrector.autoCorrect) {
-      const found = analyzeText(next, effectiveLang);
-      if (found.length > 0) {
-        next = applyAllIssues(next, found);
-        el.value = next;
-      }
+    // Durante composición IME (chino/japonés/coreano) no tocar nada: el
+    // texto aún no está confirmado y autocorregirlo rompería la escritura.
+    if (e instanceof InputEvent && e.isComposing) {
+      text = el.value;
+      return;
     }
-    text = next;
+    if (settingsStore.settings.corrector.enabled && settingsStore.settings.corrector.autoCorrect) {
+      const caret = el.selectionStart ?? el.value.length;
+      const result = autoCorrectText(el.value, effectiveLang, caret);
+      text = result.text;
+      // Solo recolocar el cursor si hubo cambios (si no, el navegador ya lo
+      // deja donde toca y tocarlo pelearía con el usuario).
+      if (result.changed && area) {
+        const pos = result.caret;
+        void tick().then(() => {
+          try {
+            area?.setSelectionRange(pos, pos);
+          } catch {
+            // Textarea oculta o desmontada: nada que hacer.
+          }
+        });
+      }
+    } else {
+      text = el.value;
+    }
+  }
+
+  function placeCaret(pos: number) {
+    void tick().then(() => {
+      try {
+        area?.setSelectionRange(pos, pos);
+        area?.focus({ preventScroll: true });
+      } catch {
+        // Nada que hacer.
+      }
+    });
   }
 
   function fixIssue(issue: CorrectorIssue) {
+    if (!issue.suggestion) return;
     text = applyIssue(text, issue);
+    placeCaret(issue.index + issue.suggestion.length);
   }
 
   function fixAll() {
     text = applyAllIssues(text, issues);
+    placeCaret(text.length);
+  }
+
+  async function learnCurrentWord(word: string) {
+    const clean = word.trim();
+    if (!clean) return;
+    try {
+      const updated = await learnWord(clean);
+      settingsStore.updateCorrector({ customWords: updated });
+      // Re-lanza la comprobación (la palabra aprendida deja de marcarse).
+      dictNonce++;
+      // Persistencia inmediata: lo aprendido no debería perderse por salir
+      // sin pulsar Guardar.
+      await settingsStore.save();
+    } catch (e) {
+      console.error('Learn word failed:', e);
+    }
   }
 
   async function copyResult() {
@@ -162,6 +249,7 @@
   {#if settingsStore.settings.corrector.enabled}
     <div class="pt-2 border-t border-surface-200 dark:border-surface-700 space-y-2">
       <textarea
+        bind:this={area}
         value={text}
         oninput={handleInput}
         rows="5"
@@ -199,10 +287,20 @@
                 {issueLabel(issue.type)}
               </span>
               <span class="font-mono truncate flex-1 text-surface-500 dark:text-surface-400">
-                “{issue.original}” → “{issue.suggestion}”
+                “{issue.original}”{#if issue.suggestion} → “{issue.suggestion}”{/if}
               </span>
+              {#if issue.type === 'dict'}
+                <button
+                  class="btn-ghost !px-2 !py-0.5 !text-[11px] flex-shrink-0"
+                  title={issue.original}
+                  onclick={() => void learnCurrentWord(issue.original)}
+                >
+                  ＋ {localeStore.t('corrLearn')}
+                </button>
+              {/if}
               <button
                 class="btn-secondary !px-2 !py-0.5 !text-[11px] flex-shrink-0"
+                disabled={!issue.suggestion}
                 onclick={() => fixIssue(issue)}
               >
                 {localeStore.t('corrApply')}

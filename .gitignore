@@ -49,6 +49,8 @@ coverage/
 
 # Tauri generated
 src-tauri/gen/
+# Generated spell-checker dictionaries (built by build.rs from dict-src/)
+src-tauri/dicts/
 
 # pnpm
 pnpm-lock.yaml (if not committing)

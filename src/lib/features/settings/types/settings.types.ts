@@ -37,6 +37,8 @@ export interface CorrectorSettings {
   /** UI locale code or 'auto' (follow interface language). */
   language: string;
   autoCorrect: boolean;
+  /** User-taught words, always treated as known. */
+  customWords: string[];
 }
 
 export interface SecuritySettings {
@@ -68,6 +70,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
     enabled: true,
     language: "auto",
     autoCorrect: false,
+    customWords: [],
   },
   security: {
     encryptionEnabled: false,

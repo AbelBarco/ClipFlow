@@ -4,6 +4,7 @@ pub mod config;
 pub mod hotkeys;
 pub mod ocr;
 pub mod pipeline;
+pub mod spell;
 pub mod storage;
 pub mod tray;
 pub mod windows;
@@ -66,6 +67,8 @@ pub fn run() {
             commands::settings_commands::reset_config,
             commands::security_commands::security_set_encryption,
             commands::security_commands::security_status,
+            commands::spell_commands::corrector_check_text,
+            commands::spell_commands::corrector_learn_word,
         ])
         .setup(|app| {
             let handle = app.handle().clone();

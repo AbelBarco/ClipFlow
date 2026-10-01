@@ -70,6 +70,15 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "resources": [
+      "dicts/es.fst",
+      "dicts/en.fst",
+      "dicts/fr.fst",
+      "dicts/de.fst",
+      "dicts/pt.fst",
+      "dicts/it.fst",
+      "dicts/ru.fst"
+    ],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
