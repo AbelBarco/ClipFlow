@@ -2,7 +2,6 @@ export interface AppSettings {
   general: GeneralSettings;
   exclusions: ExclusionSettings;
   ocr: OcrSettings;
-  corrector: CorrectorSettings;
   security: SecuritySettings;
 }
 
@@ -32,15 +31,6 @@ export interface OcrSettings {
   autoRun: boolean;
 }
 
-export interface CorrectorSettings {
-  enabled: boolean;
-  /** UI locale code or 'auto' (follow interface language). */
-  language: string;
-  autoCorrect: boolean;
-  /** User-taught words, always treated as known. */
-  customWords: string[];
-}
-
 export interface SecuritySettings {
   encryptionEnabled: boolean;
 }
@@ -65,12 +55,6 @@ export const DEFAULT_SETTINGS: AppSettings = {
     enabled: true,
     language: "eng",
     autoRun: false,
-  },
-  corrector: {
-    enabled: true,
-    language: "auto",
-    autoCorrect: false,
-    customWords: [],
   },
   security: {
     encryptionEnabled: false,

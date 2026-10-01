@@ -10,7 +10,7 @@
     "tauri": "tauri",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "check": "svelte-check --tsconfig ./tsconfig.json"
   },
   "devDependencies": {

@@ -4,7 +4,6 @@ import type {
   GeneralSettings,
   ExclusionSettings,
   OcrSettings,
-  CorrectorSettings,
   SecuritySettings,
 } from "../types/settings.types";
 import { DEFAULT_SETTINGS } from "../types/settings.types";
@@ -19,7 +18,8 @@ class SettingsStore {
     try {
       const loaded = await invoke<AppSettings>("settings_get");
       // Merge section by section so configs saved by older versions
-      // (without `language` or `corrector`) keep working.
+      // (without `language` or `security`) keep working. Sections removed
+      // in newer versions (e.g. `corrector`) are dropped by the backend.
       this.settings = {
         ...DEFAULT_SETTINGS,
         ...loaded,
@@ -29,10 +29,6 @@ class SettingsStore {
           ...(loaded.exclusions ?? {}),
         },
         ocr: { ...DEFAULT_SETTINGS.ocr, ...(loaded.ocr ?? {}) },
-        corrector: {
-          ...DEFAULT_SETTINGS.corrector,
-          ...(loaded.corrector ?? {}),
-        },
         security: { ...DEFAULT_SETTINGS.security, ...(loaded.security ?? {}) },
       };
       this.hasChanges = false;
@@ -81,11 +77,6 @@ class SettingsStore {
 
   updateOcr(ocr: Partial<OcrSettings>): void {
     this.settings.ocr = { ...this.settings.ocr, ...ocr };
-    this.hasChanges = true;
-  }
-
-  updateCorrector(corrector: Partial<CorrectorSettings>): void {
-    this.settings.corrector = { ...this.settings.corrector, ...corrector };
     this.hasChanges = true;
   }
 

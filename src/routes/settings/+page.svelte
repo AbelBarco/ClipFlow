@@ -5,7 +5,6 @@
   import ExclusionSettings from '$lib/features/settings/components/ExclusionSettings.svelte';
   import PrivacySettings from '$lib/features/settings/components/PrivacySettings.svelte';
   import OcrSettings from '$lib/features/settings/components/OcrSettings.svelte';
-  import CorrectorSettings from '$lib/features/settings/components/CorrectorSettings.svelte';
   import { settingsStore } from '$lib/features/settings/stores/settings.svelte';
   import { localeStore } from '$lib/features/i18n/stores/locale.svelte';
   import { themeStore } from '$lib/features/ui/stores/theme.svelte';
@@ -61,7 +60,6 @@
     <ExclusionSettings />
     <PrivacySettings />
     <OcrSettings />
-    <CorrectorSettings />
   </div>
 
   <footer class="flex justify-end gap-2 mt-6 pt-4 border-t border-surface-200 dark:border-surface-700">

@@ -5,9 +5,6 @@ edition = "2021"
 
 [build-dependencies]
 tauri-build = { version = "2.0", features = [] }
-# Compiles the curated word lists (dict-src/*.txt) into compact FST maps
-# (dicts/*.fst) for the offline spell checker.
-fst = "0.4"
 
 [dependencies]
 tauri = { version = "2.0", features = ["macos-private-api", "tray-icon"] }
@@ -46,9 +43,6 @@ active-win-pos-rs = "0.11"
 keyring = "3"
 # XChaCha20-Poly1305 for optional encryption at rest (pure Rust).
 chacha20poly1305 = "0.10"
-# Finite-state transducer dictionaries for the offline spell checker
-# (compact word sets + Levenshtein fuzzy search, no network ever).
-fst = { version = "0.4", features = ["levenshtein"] }
 
 # Native Windows APIs (WinRT OCR + GDI for the OCR test). Windows-only so
 # Linux/macOS builds stay lean. Still 100% offline: Windows.Media.Ocr runs

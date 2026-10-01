@@ -8,9 +8,6 @@ pub struct AppConfig {
     pub general: GeneralSettings,
     pub exclusions: ExclusionSettings,
     pub ocr: OcrSettings,
-    /// Native offline spell/grammar corrector preferences.
-    #[serde(default)]
-    pub corrector: CorrectorSettings,
     /// At-rest protection preferences.
     #[serde(default)]
     pub security: SecuritySettings,
@@ -66,37 +63,8 @@ pub struct OcrSettings {
     pub auto_run: bool,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct CorrectorSettings {
-    pub enabled: bool,
-    /// UI locale code or "auto" (follow interface language).
-    #[serde(default = "default_corrector_language")]
-    pub language: String,
-    #[serde(default)]
-    pub auto_correct: bool,
-    /// User-taught words ("add to dictionary"), always treated as known.
-    #[serde(default)]
-    pub custom_words: Vec<String>,
-}
-
-impl Default for CorrectorSettings {
-    fn default() -> Self {
-        Self {
-            enabled: true,
-            language: "auto".to_string(),
-            auto_correct: false,
-            custom_words: Vec::new(),
-        }
-    }
-}
-
 fn default_ui_language() -> String {
     "es".to_string()
-}
-
-fn default_corrector_language() -> String {
-    "auto".to_string()
 }
 
 impl Default for AppConfig {
@@ -127,7 +95,6 @@ impl Default for AppConfig {
                 language: "eng".to_string(),
                 auto_run: false,
             },
-            corrector: CorrectorSettings::default(),
             security: SecuritySettings::default(),
         }
     }

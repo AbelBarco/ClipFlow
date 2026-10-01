@@ -164,7 +164,7 @@ separate OS password-field API integration.
 
 - Unit tests for exclusion heuristics, crypto round-trips and
   duplicate-refresh (`cargo test`), enforced in CI on every push/PR
-- Frontend i18n completeness + corrector engine tests (`vitest`)
+- Frontend i18n completeness tests (`vitest`)
 - Fuzzing for parser functions (planned, see ROADMAP)
 
 ## Incident Response
