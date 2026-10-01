@@ -46,6 +46,15 @@ fn run_migrations(conn: &Connection) -> Result<(), rusqlite::Error> {
         CREATE TABLE IF NOT EXISTS settings (
             key TEXT PRIMARY KEY,
             value TEXT NOT NULL
+        );
+        -- Delete tombstones: content hashes the user removed. The watcher
+        -- consults them exactly once per boot (baseline poll) so deleted
+        -- items don't get re-ingested from a clipboard that still holds
+        -- them. Stale entries are inert by construction (see repository.rs)
+        -- and pruned by age for hygiene.
+        CREATE TABLE IF NOT EXISTS tombstones (
+            content_hash TEXT PRIMARY KEY,
+            deleted_at INTEGER NOT NULL
         );",
     )?;
 

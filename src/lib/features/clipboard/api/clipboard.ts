@@ -13,7 +13,7 @@ export async function clearHistory(): Promise<void> {
   return invoke("clipboard_clear_history");
 }
 
-export async function pasteItem(itemId: string): Promise<void> {
+export async function pasteItem(itemId: string): Promise<boolean> {
   return invoke("clipboard_paste_item", { itemId });
 }
 

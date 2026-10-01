@@ -12,6 +12,8 @@
   import type { ClipType } from '$lib/features/clipboard/types/clipboard.types';
   import { copyToClipboard, forgetImage } from '$lib/features/clipboard/api/clipboard';
 
+  let searchBarRef: { focus: () => void } | undefined = $state(undefined);
+
   const FILTERS = $derived<{ id: ClipType | 'all'; label: string }[]>([
     { id: 'all', label: localeStore.t('filterAll') },
     { id: 'text', label: localeStore.t('filterText') },
@@ -23,6 +25,10 @@
 
   let toast: string | null = $state(null);
   let toastTimer: ReturnType<typeof setTimeout> | undefined = $state(undefined);
+  // Borrado en dos pasos: el historial no tiene papelera, un clic
+  // accidental no debe vaciarlo.
+  let clearArmed = $state(false);
+  let clearTimer: ReturnType<typeof setTimeout> | undefined = $state(undefined);
 
   // Paginación: renderizar cientos de nodos de golpe congela la ventana.
   const PAGE_SIZE = 60;
@@ -108,6 +114,17 @@
   }
 
   async function handleClear() {
+    if (!clearArmed) {
+      clearArmed = true;
+      if (clearTimer) clearTimeout(clearTimer);
+      clearTimer = setTimeout(() => {
+        clearArmed = false;
+      }, 3000);
+      notify(localeStore.t('confirmClear'));
+      return;
+    }
+    if (clearTimer) clearTimeout(clearTimer);
+    clearArmed = false;
     try {
       await clipboardStore.clearHistory();
       notify(localeStore.t('toastCleared'));
@@ -119,21 +136,28 @@
   function handleKeys(e: KeyboardEvent) {
     const target = e.target as HTMLElement | null;
     const typing = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT');
+    // Con el foco en un botón (filtros, "mostrar más"...), Enter/Espacio ya
+    // lo activan: el atajo global no debe disparar una segunda acción.
+    const onButton = !!target?.closest?.('button');
     if (e.key === 'ArrowDown' && !typing) {
       e.preventDefault();
       moveSelection(1);
     } else if (e.key === 'ArrowUp' && !typing) {
       e.preventDefault();
       moveSelection(-1);
-    } else if (e.key === 'Enter' && !typing && clipboardStore.selectedId) {
+    } else if (e.key === 'Enter' && !typing && !onButton && clipboardStore.selectedId) {
       e.preventDefault();
       void handleCopy(clipboardStore.selectedId);
-    } else if ((e.key === 'Delete' || e.key === 'Backspace') && !typing && clipboardStore.selectedId) {
+    } else if ((e.key === 'Delete' || e.key === 'Backspace') && !typing && !onButton && clipboardStore.selectedId) {
       e.preventDefault();
       void handleDelete(clipboardStore.selectedId);
     } else if (e.key === 'Escape' && typing && target instanceof HTMLInputElement) {
       target.blur();
       clipboardStore.setFilter({ query: '' });
+    } else if (e.key === '/' && !typing && !onButton) {
+      // El hint del buscador lo promete: "/" enfoca la búsqueda.
+      e.preventDefault();
+      searchBarRef?.focus();
     }
   }
 
@@ -154,6 +178,7 @@
       unlisten?.();
       window.removeEventListener('keydown', handleKeys);
       if (toastTimer) clearTimeout(toastTimer);
+      if (clearTimer) clearTimeout(clearTimer);
     };
   });
 </script>
@@ -174,8 +199,8 @@
       ⚙️
     </button>
     <button
-      class="btn-ghost p-2 text-red-500"
-      title={localeStore.t('headerClear')}
+      class="btn-ghost p-2 text-red-500 {clearArmed ? '!bg-red-500/10 ring-1 ring-red-500' : ''}"
+      title={clearArmed ? localeStore.t('confirmClear') : localeStore.t('headerClear')}
       onclick={() => void handleClear()}
       disabled={clipboardStore.items.length === 0}
       aria-label={localeStore.t('headerClear')}
@@ -184,7 +209,7 @@
     </button>
   </header>
 
-  <SearchBar bind:value={clipboardStore.filter.query} placeholder={localeStore.t('searchMain')} />
+  <SearchBar bind:this={searchBarRef} bind:value={clipboardStore.filter.query} placeholder={localeStore.t('searchMain')} />
 
   <div class="flex gap-1.5 mt-2.5 overflow-x-auto pb-1">
     {#each FILTERS as f}
@@ -253,7 +278,7 @@
   {/if}
 
   <footer class="flex items-center gap-2 mt-2 text-[11px] text-surface-400 dark:text-surface-500">
-    <span><Kbd keys={['↑', '↓']} /> {localeStore.t('footerNavigate')}</span>
+    <span><Kbd keys={['↑', '↓']} separator="" /> {localeStore.t('footerNavigate')}</span>
     <span><Kbd keys={['Enter']} /> {localeStore.t('footerCopy')}</span>
     <span><Kbd keys={['Supr']} /> {localeStore.t('footerDelete')}</span>
   </footer>

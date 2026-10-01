@@ -15,6 +15,14 @@
   });
 
   function handleShortcutChange(e: KeyboardEvent) {
+    // Escape cancela la grabación sin tocar el atajo (si no, "Escape" se
+    // guardaría como atajo y habría que resetear ajustes para deshacerlo).
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      isRecording = false;
+      (e.currentTarget as HTMLInputElement | null)?.blur();
+      return;
+    }
     e.preventDefault();
     const parts: string[] = [];
     if (e.ctrlKey || e.metaKey) parts.push(e.metaKey ? '⌘' : 'Ctrl');
@@ -44,6 +52,17 @@
     const theme = select.value as 'light' | 'dark' | 'system';
     settingsStore.updateGeneral({ theme });
     themeStore.setTheme(theme);
+  }
+
+  function handleMaxHistory(e: Event) {
+    // bind:value en un input numérico entrega string: sin convertir, el
+    // Guardar enviaría "500" y el backend (usize) lo rechazaría.
+    const input = e.currentTarget as HTMLInputElement;
+    const parsed = Number.parseInt(input.value, 10);
+    const clamped = Number.isFinite(parsed)
+      ? Math.min(5000, Math.max(50, parsed))
+      : settingsStore.settings.general.maxHistoryItems;
+    settingsStore.updateGeneral({ maxHistoryItems: clamped });
   }
 </script>
 
@@ -88,12 +107,12 @@
     <input
       id="max-history"
       type="number"
-      bind:value={settingsStore.settings.general.maxHistoryItems}
+      value={settingsStore.settings.general.maxHistoryItems}
       min="50"
       max="5000"
       step="50"
       class="input w-[100px]"
-      oninput={() => settingsStore.updateGeneral({ maxHistoryItems: settingsStore.settings.general.maxHistoryItems })}
+      oninput={handleMaxHistory}
     />
     <p class="text-xs text-surface-500 dark:text-surface-400 mt-1">
       {localeStore.t('generalMaxHistoryHint')}

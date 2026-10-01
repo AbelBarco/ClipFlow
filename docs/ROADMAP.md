@@ -10,6 +10,8 @@
 - [x] Color preview and conversion
 - [x] OCR (native on-device APIs: WinRT on Windows, Tesseract on Linux)
 - [x] Plain text paste
+- [x] Real auto-paste (spotlight hides, Ctrl/Cmd+V is synthesized into the previous app; manual fallback with notice where unavailable)
+- [x] Delete tombstones (deleted items are never re-ingested from the clipboard, including across restarts)
 - [x] Transformers (case, encoding, formatting)
 - [x] Per-app exclusion via focused-window detection (Win/macOS/X11, Hyprland/KWin)
 - [x] Secret heuristics (sensitivity levels, non-secret allow-list, skip notice)

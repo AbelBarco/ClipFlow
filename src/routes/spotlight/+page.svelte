@@ -8,11 +8,14 @@
   import { localeStore } from '$lib/features/i18n/stores/locale.svelte';
   import { clipboardStore } from '$lib/features/clipboard/stores/clipboard.svelte';
   import type { ClipItem } from '$lib/features/clipboard/types/clipboard.types';
-  import { invoke } from '@tauri-apps/api/core';
+  import { pasteItem } from '$lib/features/clipboard/api/clipboard';
 
   const PAGE_SIZE = 40;
   let visibleCount = $state(PAGE_SIZE);
   let lastSig = '';
+  let toast: string | null = $state(null);
+  let toastTimer: ReturnType<typeof setTimeout> | undefined = $state(undefined);
+  let searchBarRef: { focus: () => void } | undefined = $state(undefined);
 
   $effect(() => {
     const sig = clipboardStore.filter.query;
@@ -54,6 +57,11 @@
       .catch((e) => console.error('Failed to listen for clipboard events:', e));
 
     function handleKeydown(e: KeyboardEvent) {
+      const target = e.target as HTMLElement | null;
+      // Con el foco en un botón, Enter/Espacio ya lo activan: no disparar
+      // una segunda acción (los items paran su propio Enter con
+      // stopPropagation en ClipboardItem).
+      const onButton = !!target?.closest?.('button');
       if (e.key === 'Escape') {
         void closeWindow();
       } else if (e.key === 'ArrowDown') {
@@ -62,16 +70,34 @@
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
         moveSelection(-1);
-      } else if (e.key === 'Enter' && clipboardStore.selectedId) {
+      } else if (e.key === 'Enter' && !onButton && clipboardStore.selectedId) {
         e.preventDefault();
         void handlePaste(clipboardStore.selectedId);
       }
     }
     window.addEventListener('keydown', handleKeydown);
 
+    // La ventana se oculta, no se desmonta: al reabrirla hay que resetear la
+    // búsqueda y devolver el foco, o el filtro viejo esconde lo recién copiado.
+    let unlistenFocus: (() => void) | undefined;
+    void import('@tauri-apps/api/window')
+      .then(async ({ getCurrentWindow }) => {
+        unlistenFocus = await getCurrentWindow().onFocusChanged(({ payload: focused }) => {
+          if (focused) {
+            clipboardStore.setFilter({ query: '' });
+            searchBarRef?.focus();
+          }
+        });
+      })
+      .catch(() => {
+        // Not in Tauri — nothing to sync.
+      });
+
     return () => {
       unlisten?.();
+      unlistenFocus?.();
       window.removeEventListener('keydown', handleKeydown);
+      if (toastTimer) clearTimeout(toastTimer);
     };
   });
 
@@ -86,10 +112,27 @@
 
   async function handlePaste(itemId: string) {
     try {
-      await invoke('clipboard_paste_item', { itemId });
+      const pasted = await pasteItem(itemId);
+      if (!pasted) {
+        // Auto-paste unavailable here (e.g. Wayland): the content IS in the
+        // clipboard and the backend re-showed this window, so say so instead
+        // of vanishing silently.
+        toast = localeStore.t('toastCopied');
+        if (toastTimer) clearTimeout(toastTimer);
+        await new Promise((resolve) => {
+          toastTimer = setTimeout(resolve, 1800);
+        });
+      }
     } catch (e) {
       console.error('Paste failed:', e);
+      toast = localeStore.t('toastCopyFailed');
+      if (toastTimer) clearTimeout(toastTimer);
+      await new Promise((resolve) => {
+        toastTimer = setTimeout(resolve, 1800);
+      });
     }
+    if (toastTimer) clearTimeout(toastTimer);
+    toast = null;
     await closeWindow();
   }
 </script>
@@ -106,7 +149,7 @@
     <span class="text-[11px] text-surface-400 ml-auto">{localeStore.t('spotHint')}</span>
   </div>
 
-  <SearchBar bind:value={clipboardStore.filter.query} placeholder={localeStore.t('searchSpotlight')} autoFocus />
+  <SearchBar bind:this={searchBarRef} bind:value={clipboardStore.filter.query} placeholder={localeStore.t('searchSpotlight')} autoFocus />
 
   <div class="flex-1 overflow-hidden mt-3 min-h-[120px]">
     {#if clipboardStore.filteredItems.length === 0}
@@ -140,7 +183,13 @@
 
   <footer class="flex items-center gap-2 mt-3 pt-3 border-t border-surface-200 dark:border-surface-700 text-[11px] text-surface-500 dark:text-surface-400">
     <Kbd keys={['Enter']} /> <span>{localeStore.t('spotPaste')}</span>
-    <Kbd keys={['↑', '↓']} /> <span>{localeStore.t('spotChoose')}</span>
+    <Kbd keys={['↑', '↓']} separator="" /> <span>{localeStore.t('spotChoose')}</span>
     <Kbd keys={['Esc']} /> <span class="ml-auto">{localeStore.t('spotClose')}</span>
   </footer>
+
+  {#if toast}
+    <div class="fixed bottom-4 left-1/2 -translate-x-1/2 px-3 py-1.5 text-sm bg-surface-900 dark:bg-surface-50 text-white dark:text-surface-900 rounded-full shadow-spotlight">
+      {toast}
+    </div>
+  {/if}
 </div>

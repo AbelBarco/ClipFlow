@@ -79,7 +79,11 @@
 
   function handleKeydown(e: KeyboardEvent) {
     if (e.key === 'Enter' && onPaste) {
+      // Sin esto, el Enter llegaría también al atajo global de la ventana y
+      // pegaría dos veces. Los botones internos gestionan lo suyo solos.
+      if ((e.target as HTMLElement | null)?.closest?.('button')) return;
       e.preventDefault();
+      e.stopPropagation();
       void onPaste(item.id);
     }
   }
@@ -98,6 +102,7 @@
 <div
   data-item-id={item.id}
   class="card flex items-start gap-2.5 p-2.5 w-full text-left item-hover group cursor-pointer
+    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500
     {selected ? '!border-primary-500 ring-1 ring-primary-500' : ''} {compact ? '!p-2' : ''}"
   onclick={handleClick}
   onkeydown={handleKeydown}

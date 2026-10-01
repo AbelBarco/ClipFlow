@@ -1,7 +1,9 @@
 use crate::clipboard::exclusion::{decide, ExclusionDecision};
 use crate::clipboard::notify::notify_secret_excluded;
 use crate::pipeline::{process_clipboard_content, process_image_content};
-use crate::storage::repository::{add_clip, ClipItem};
+use crate::storage::repository::{
+    add_clip, image_tombstone_key, is_tombstoned, text_tombstone_key, ClipItem,
+};
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use std::time::Duration;
@@ -33,23 +35,35 @@ pub async fn start_watcher(app: AppHandle) -> Result<(), String> {
                     if !content.trim().is_empty() {
                         let hash = crate::pipeline::dedupe::content_hash(&content);
                         if last_text_hash.as_ref() != Some(&hash) {
+                            // Baseline = first poll ever: the clipboard may
+                            // still hold something the user deleted earlier.
+                            // Tombstones are consulted ONLY here — later
+                            // polls must re-add explicit re-copies.
+                            let baseline = last_text_hash.is_none();
                             last_text_hash = Some(hash.clone());
-                            match decide(&content).await {
-                                ExclusionDecision::Keep => {
-                                    let item = process_clipboard_content(content.as_bytes(), None);
-                                    emit_clip(&app, ClipItem::from(item)).await;
-                                }
-                                ExclusionDecision::ExcludedApp { matched_entry } => {
-                                    // Deliberately no notification: the user
-                                    // asked for silence from this app.
-                                    // (Never log the content itself.)
-                                    debug!("Excluded clipboard content from app '{matched_entry}'");
-                                }
-                                ExclusionDecision::ConcealedHeuristic { reason } => {
-                                    debug!("Excluded possible secret ({reason}) from history");
-                                    // …but DO tell the user something was
-                                    // dropped, so copies never "vanish".
-                                    notify_secret_excluded(&app).await;
+                            if baseline && is_tombstoned(&text_tombstone_key(&content)) {
+                                debug!("Skipping tombstoned content re-ingest on boot");
+                            } else {
+                                match decide(&content).await {
+                                    ExclusionDecision::Keep => {
+                                        let item =
+                                            process_clipboard_content(content.as_bytes(), None);
+                                        emit_clip(&app, ClipItem::from(item)).await;
+                                    }
+                                    ExclusionDecision::ExcludedApp { matched_entry } => {
+                                        // Deliberately no notification: the user
+                                        // asked for silence from this app.
+                                        // (Never log the content itself.)
+                                        debug!(
+                                            "Excluded clipboard content from app '{matched_entry}'"
+                                        );
+                                    }
+                                    ExclusionDecision::ConcealedHeuristic { reason } => {
+                                        debug!("Excluded possible secret ({reason}) from history");
+                                        // …but DO tell the user something was
+                                        // dropped, so copies never "vanish".
+                                        notify_secret_excluded(&app).await;
+                                    }
                                 }
                             }
                         }
@@ -67,7 +81,18 @@ pub async fn start_watcher(app: AppHandle) -> Result<(), String> {
                         if width > 0 && height > 0 && width * height <= MAX_IMAGE_PIXELS {
                             let hash = image_hash(width, height, &rgba);
                             if last_image_hash != Some(hash) {
+                                // Same baseline rule as text: a deleted image
+                                // still sitting in the clipboard must not come
+                                // back on boot (its path changes on re-save,
+                                // so only the pixel fingerprint can stop it).
+                                let baseline = last_image_hash.is_none();
                                 last_image_hash = Some(hash);
+                                if baseline
+                                    && is_tombstoned(&image_tombstone_key(width, height, &rgba))
+                                {
+                                    debug!("Skipping tombstoned image re-ingest on boot");
+                                    continue;
+                                }
                                 let byte_len = rgba.len();
                                 match crate::storage::image_store::save_rgba_png(
                                     &app, width, height, &rgba,
