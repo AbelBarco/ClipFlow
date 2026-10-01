@@ -1,3 +1,4 @@
+pub mod autostart;
 pub mod clipboard;
 pub mod commands;
 pub mod config;
@@ -27,6 +28,13 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_clipboard_manager::init())
+        // Autostart entries always carry `--hidden` so a login-time launch
+        // stays in the tray (see `autostart::launched_hidden` below).
+        .plugin(
+            tauri_plugin_autostart::Builder::new()
+                .args([crate::autostart::HIDDEN_ARG])
+                .build(),
+        )
         .plugin(
             tauri_plugin_sql::Builder::default()
                 .add_migrations("sqlite:clipflow.db", vec![])
@@ -104,9 +112,28 @@ pub fn run() {
                 tracing::error!("Window setup failed: {}", e);
             }
 
-            // Show main window on first start so the UI is visible.
+            // Heal autostart drift on every boot (user toggled it in the OS,
+            // entry points at an old path, first run after install…).
+            tauri::async_runtime::block_on(async {
+                match crate::config::app_config::get_config().await {
+                    Ok(config) => {
+                        if let Err(e) = crate::autostart::sync_launch_at_startup(
+                            &handle,
+                            config.general.launch_at_startup,
+                        ) {
+                            tracing::warn!("Autostart sync failed: {e}");
+                        }
+                    }
+                    Err(e) => tracing::warn!("Could not load settings for autostart sync: {e}"),
+                }
+            });
+
+            // Normal start shows the main window; a login-time start (the OS
+            // launched us with `--hidden`) stays quietly in the tray.
             // (Spotlight/settings stay hidden until invoked.)
-            crate::windows::show_main_window(&handle).unwrap_or(());
+            if !crate::autostart::launched_hidden() {
+                crate::windows::show_main_window(&handle).unwrap_or(());
+            }
 
             Ok(())
         })

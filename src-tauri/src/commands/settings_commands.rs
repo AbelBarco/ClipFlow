@@ -8,16 +8,22 @@ pub async fn settings_get() -> Result<AppConfig, String> {
 }
 
 #[tauri::command]
-pub async fn settings_set(config: AppConfig) -> Result<(), String> {
+pub async fn settings_set(app: tauri::AppHandle, config: AppConfig) -> Result<(), String> {
     // If the shortcut changed, update the global shortcut registration.
     // We can't access AppHandle here; the frontend emits an event the
     // backend listens to (see lib.rs). For now just persist.
-    set_impl(config).await.map_err(|e| e.to_string())
+    set_impl(config.clone()).await.map_err(|e| e.to_string())?;
+    // Launch-at-startup is real now: apply the toggle to the OS right away
+    // instead of waiting for the next boot (which also re-syncs).
+    crate::autostart::sync_launch_at_startup(&app, config.general.launch_at_startup)?;
+    Ok(())
 }
 
 #[tauri::command]
-pub async fn settings_reset() -> Result<AppConfig, String> {
-    reset_impl().await.map_err(|e| e.to_string())
+pub async fn settings_reset(app: tauri::AppHandle) -> Result<AppConfig, String> {
+    let defaults = reset_impl().await.map_err(|e| e.to_string())?;
+    crate::autostart::sync_launch_at_startup(&app, defaults.general.launch_at_startup)?;
+    Ok(defaults)
 }
 
 // Backwards-compatible aliases for the old names.
@@ -27,11 +33,15 @@ pub async fn get_config() -> Result<AppConfig, String> {
 }
 
 #[tauri::command]
-pub async fn set_config(config: AppConfig) -> Result<(), String> {
-    set_impl(config).await.map_err(|e| e.to_string())
+pub async fn set_config(app: tauri::AppHandle, config: AppConfig) -> Result<(), String> {
+    set_impl(config.clone()).await.map_err(|e| e.to_string())?;
+    crate::autostart::sync_launch_at_startup(&app, config.general.launch_at_startup)?;
+    Ok(())
 }
 
 #[tauri::command]
-pub async fn reset_config() -> Result<AppConfig, String> {
-    reset_impl().await.map_err(|e| e.to_string())
+pub async fn reset_config(app: tauri::AppHandle) -> Result<AppConfig, String> {
+    let defaults = reset_impl().await.map_err(|e| e.to_string())?;
+    crate::autostart::sync_launch_at_startup(&app, defaults.general.launch_at_startup)?;
+    Ok(defaults)
 }
