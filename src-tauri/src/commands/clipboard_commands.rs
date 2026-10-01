@@ -1,7 +1,6 @@
-use crate::clipboard::writer::{synthesize_paste, write_to_clipboard};
+use crate::clipboard::writer::write_to_clipboard;
 use crate::storage::repository::{clear_all_clips, delete_clip, get_all_clips, get_clip_by_id};
 use serde::{Deserialize, Serialize};
-use tauri::Manager;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -65,33 +64,14 @@ pub async fn clipboard_clear_history(app: tauri::AppHandle) -> Result<(), String
     Ok(())
 }
 
-/// Real paste: copy the item to the OS clipboard, hide the spotlight so the
-/// keystrokes land in the previously focused app, then synthesize the paste
-/// shortcut (Ctrl+V, Cmd+V on macOS).
-///
-/// Returns whether the keystroke was synthesized. When false (e.g. Wayland
-/// without the right portal) the content is still in the clipboard — the
-/// frontend tells the user to paste manually with Ctrl+V.
 #[tauri::command]
 #[allow(non_snake_case)]
-pub async fn clipboard_paste_item(app: tauri::AppHandle, itemId: String) -> Result<bool, String> {
-    let clip = get_clip_by_id(&itemId).await?.ok_or("Item not found")?;
-    write_to_clipboard(&clip.content, &clip.r#type).await?;
-    if let Some(win) = app.get_webview_window("spotlight") {
-        let _ = win.hide();
+pub async fn clipboard_paste_item(itemId: String) -> Result<(), String> {
+    if let Some(clip) = get_clip_by_id(&itemId).await? {
+        write_to_clipboard(&clip.content, &clip.r#type).await
+    } else {
+        Err("Item not found".to_string())
     }
-    // Let the OS return focus to the previous app before typing into it.
-    tokio::time::sleep(std::time::Duration::from_millis(180)).await;
-    let pasted = synthesize_paste().await;
-    if !pasted {
-        // Show the window again so the frontend can tell the user to paste
-        // manually: the content is in the clipboard either way.
-        if let Some(win) = app.get_webview_window("spotlight") {
-            let _ = win.show();
-            let _ = win.set_focus();
-        }
-    }
-    Ok(pasted)
 }
 
 #[tauri::command]

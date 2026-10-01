@@ -15,14 +15,10 @@
 
 <div
   class="{sizes[size]} rounded-lg border border-surface-300 dark:border-surface-600 overflow-hidden relative"
+  style="background-color: {color}"
   title={color}
   role="img"
-  aria-label={color}
+  aria-label={`Color preview: ${color}`}
 >
-  <!-- Damero debajo: solo se ve a través de colores con transparencia. -->
-  <div
-    class="absolute inset-0 bg-[conic-gradient(from_90deg_at_50%_50%,#d4d4d8_25%,#fafafa_0_50%,#d4d4d8_0_75%,#fafafa_0)] bg-[length:8px_8px] dark:bg-[conic-gradient(from_90deg_at_50%_50%,#3f3f46_25%,#27272a_0_50%,#3f3f46_0_75%,#27272a_0)]"
-    aria-hidden="true"
-  ></div>
-  <div class="absolute inset-0" style="background-color: {color}" aria-hidden="true"></div>
+  <div class="absolute inset-0 bg-[conic-gradient(from_90deg_at_50%_50%,transparent_50%,white_50%),conic-gradient(from_-90deg_at_50%_50%,transparent_50%,black_50%)] bg-[length:8px_8px]"></div>
 </div>

@@ -10,10 +10,6 @@
   import { themeStore } from '$lib/features/ui/stores/theme.svelte';
   import { DEFAULT_LOCALE, isLocale } from '$lib/features/i18n/translations';
 
-  let savedFlash = $state(false);
-  let saveError: boolean | null = $state(null);
-  let flashTimer: ReturnType<typeof setTimeout> | undefined = $state(undefined);
-
   onMount(() => {
     const hadStoredLocale = localeStore.hasStoredLocale();
     void settingsStore.load().then(() => {
@@ -30,29 +26,20 @@
   });
 
   async function handleSave() {
-    saveError = null;
     try {
       await settingsStore.save();
-      savedFlash = true;
-      if (flashTimer) clearTimeout(flashTimer);
-      flashTimer = setTimeout(() => {
-        savedFlash = false;
-      }, 2200);
     } catch (e) {
       console.error('Save failed:', e);
-      saveError = true;
     }
   }
 
   async function handleReset() {
-    saveError = null;
     try {
       await settingsStore.resetToDefaults();
       themeStore.setTheme(settingsStore.settings.general.theme);
       localeStore.setLocale(settingsStore.settings.general.language);
     } catch (e) {
       console.error('Reset failed:', e);
-      saveError = true;
     }
   }
 </script>
@@ -75,24 +62,11 @@
     <OcrSettings />
   </div>
 
-  <footer class="flex items-center justify-end gap-2 mt-6 pt-4 border-t border-surface-200 dark:border-surface-700">
-    {#if savedFlash}
-      <span class="text-xs font-medium text-green-600 dark:text-green-400 mr-auto">
-        {localeStore.t('settingsSaved')}
-      </span>
-    {:else if saveError}
-      <span class="text-xs font-medium text-red-500 mr-auto">
-        {localeStore.t('settingsSaveFailed')}
-      </span>
-    {/if}
+  <footer class="flex justify-end gap-2 mt-6 pt-4 border-t border-surface-200 dark:border-surface-700">
     <button class="btn-secondary" onclick={() => void handleReset()}>
       {localeStore.t('settingsReset')}
     </button>
-    <button
-      class="btn-primary"
-      onclick={() => void handleSave()}
-      disabled={!settingsStore.hasChanges}
-    >
+    <button class="btn-primary" onclick={() => void handleSave()}>
       {localeStore.t('settingsSave')}
     </button>
   </footer>

@@ -35,12 +35,6 @@
   let transformResult: string | null = $state(null);
   let transformRunning = $state(false);
 
-  // Guardas anti-carrera: navegando rápido con ↑/↓, una promesa vieja no debe
-  // pintar datos de otro item.
-  let imageReq = 0;
-  let colorReq = 0;
-  let transformReq = 0;
-
   // Recarga los datos derivados cada vez que cambia el item seleccionado.
   $effect(() => {
     const current = item;
@@ -48,38 +42,27 @@
     colorConv = null;
     transformResult = null;
     showTransformers = false;
-    transformRunning = false;
-    // Invalida transformaciones en vuelo del item anterior.
-    transformReq++;
 
     if (!current) return;
 
     if (current.type === 'image') {
-      const req = ++imageReq;
       imageLoading = true;
       getImageDataUrlCached(current.id)
         .then((url) => {
-          if (req !== imageReq) return;
           imageUrl = url;
         })
         .catch(() => {
-          if (req !== imageReq) return;
           imageUrl = null;
         })
         .finally(() => {
-          if (req !== imageReq) return;
           imageLoading = false;
         });
     } else if (current.type === 'color') {
-      const req = ++colorReq;
-      const content = current.content;
-      invoke<ColorConversion>('color_convert', { input: content })
+      invoke<ColorConversion>('color_convert', { input: current.content })
         .then((conv) => {
-          if (req !== colorReq) return;
           colorConv = conv;
         })
         .catch(() => {
-          if (req !== colorReq) return;
           colorConv = null;
         });
     }
@@ -145,21 +128,18 @@
 
   async function handleTransform(t: Transformer) {
     if (!item) return;
-    const req = ++transformReq;
-    const source = item.content;
     transformRunning = true;
     try {
       const out = await invoke<string>('transform_apply', {
-        text: source,
+        text: item.content,
         transformer: t.id
       });
-      if (req !== transformReq) return;
       transformResult = out;
     } catch (e) {
       console.error('Transform failed:', e);
       notify(localeStore.t('toastTransformFailed'));
     } finally {
-      if (req === transformReq) transformRunning = false;
+      transformRunning = false;
     }
   }
 </script>
@@ -241,7 +221,7 @@
       {:else}
         <pre class="text-xs text-surface-900 dark:text-surface-100 whitespace-pre-wrap break-words font-mono bg-surface-100 dark:bg-surface-800 rounded-lg p-2 max-h-[160px] overflow-y-auto">{item.content}</pre>
       {/if}
-      <p class="text-[11px] text-surface-400 mt-1">{localeStore.t('previewChars', { count: [...item.content].length })}</p>
+      <p class="text-[11px] text-surface-400 mt-1">{localeStore.t('previewChars', { count: item.content.length })}</p>
       {#if transformResult !== null}
         <pre class="text-xs whitespace-pre-wrap break-words font-mono bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg p-2 max-h-[120px] overflow-y-auto mt-2">{transformResult}</pre>
       {/if}

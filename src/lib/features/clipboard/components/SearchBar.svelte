@@ -11,12 +11,6 @@
 
   let inputRef: HTMLInputElement | undefined = $state(undefined);
 
-  /** Enfoca (y selecciona) el buscador: lo usa el atajo "/" y spotlight. */
-  export function focus() {
-    inputRef?.focus();
-    inputRef?.select();
-  }
-
   $effect(() => {
     if (inputRef && autoFocus) {
       inputRef.focus();
@@ -37,6 +31,6 @@
     aria-label={placeholder}
   />
   <div class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-xs text-surface-400 dark:text-surface-500">
-    <Kbd keys={['/']} />
+    <Kbd keys={['/', '⌘']} />
   </div>
 </div>

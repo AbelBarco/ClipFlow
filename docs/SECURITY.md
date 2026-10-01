@@ -103,8 +103,6 @@ separate OS password-field API integration.
 - SQL database (read-only for search)
 - Global shortcut (receive only)
 - Window management (show/hide/focus)
-- Input synthesis (Ctrl/Cmd+V after an explicit user pick; never
-  keylogs, never types without a user action — see `writer.rs`)
 
 ### Settings Window
 
